@@ -17,7 +17,7 @@ public class RefreshHeader: MJRefreshStateHeader {
         return view
     }()
     
-    public var activityIndicatorViewStyle: UIActivityIndicatorViewStyle! {
+    public var activityIndicatorViewStyle: UIActivityIndicatorView.Style! {
         didSet {
             self.setNeedsLayout()
         }
@@ -108,7 +108,7 @@ public class RefreshFotter: MJRefreshAutoStateFooter {
         return view
     }()
     
-    public var activityIndicatorViewStyle: UIActivityIndicatorViewStyle! {
+    public var activityIndicatorViewStyle: UIActivityIndicatorView.Style! {
         didSet {
             self.setNeedsLayout()
         }
