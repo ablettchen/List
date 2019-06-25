@@ -1,5 +1,6 @@
 use_frameworks!
 inhibit_all_warnings!
+platform :ios, '9.0'
 
 target 'List_Example' do
   pod 'List', :path => '../'

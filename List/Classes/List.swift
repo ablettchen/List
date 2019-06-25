@@ -24,7 +24,6 @@ import Blank
     }
 }
 
-
 @objc public enum LoadStrategy : Int, CustomStringConvertible {
     case auto
     case manual
