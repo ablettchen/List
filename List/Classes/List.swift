@@ -50,6 +50,9 @@ import Blank
     }
 }
 
+private var dataLengthDefault: Int = 20
+private var dataLengthMax: Int = 1000
+
 public class ListConf: NSObject {
     
     public var loadType: LoadType!
@@ -61,7 +64,7 @@ public class ListConf: NSObject {
     public func reset() -> Void {
         loadType = .none
         loadStrategy = .auto
-        length = 20
+        length = 0
         
         blankData = [.fail      : Blank.defaultBlank(type: .fail),
                      .noData    : Blank.defaultBlank(type: .noData),
@@ -80,39 +83,22 @@ private var kRange = "kRange"
 
 public class List: NSObject {
     
-    private var listView: UIScrollView!
-    
     public var conf: ListConf! {
         get {
             if let conf = objc_getAssociatedObject(self, &kConf) as? ListConf {
                 return conf;
             }
             let conf = ListConf()
-            setConf(conf: conf)
+            objc_setAssociatedObject(self, &kConf, conf, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
             return conf
         }
-    }
-    
-    public func setConf(conf: ListConf) -> Void {
-        objc_setAssociatedObject(self, &kConf, conf, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-        if conf.loadType == .none {
-            self.listView.mj_header = nil
-        }else {
-            if conf.loadStrategy == .auto {
-                self.listView.mj_header = self.header
-            }
-        }
-    }
-    
-    private var blank: Blank?
-    
-    private var blankType: BlankType! {
-        didSet {
-            if self.conf.blankData.isEmpty {
-                self.blank = Blank.defaultBlank(type: blankType)
+        set {
+            objc_setAssociatedObject(self, &kConf, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            if newValue.loadType == .none {
+                self.listView.mj_header = RefreshHeader()
             }else {
-                if let blank = self.conf.blankData[blankType] {
-                    
+                if newValue.loadStrategy == .auto {
+                    self.listView.mj_header = self.header
                 }
             }
         }
@@ -148,32 +134,69 @@ public class List: NSObject {
         objc_setAssociatedObject(self, &kRange, range, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
     }
     
-    private var lastItemCount: Int!
-    
-    func finished(error:Error) -> Void {
+    public func finish(error:Error) -> Void {
+        if blank.isAnimating {blank.isAnimating = false}
+        listView.reloadBlank()
+        
+        if conf.loadType == .none {setStatus(.new)}
+        
+        if status == .new {
+            listView.mj_header.endRefreshing()
+            listView.mj_footer.resetNoMoreData()
+            
+            if listView.itemsCount() == 0 {
+                blankType = (error != nil) ? .fail : .noData
+            }else {
+                if conf.loadType == .all {
+                    if listView.itemsCount() >= conf.length {
+                        if conf.loadStrategy == .auto {
+                            listView.mj_footer = footer
+                        }
+                    }else {
+                        listView.mj_footer = nil
+                    }
+                }
+            }
+        }else if status == .more {
+            if (listView.itemsCount() - lastItemCount) < range.length {
+                listView.mj_footer.endRefreshingWithNoMoreData()
+            }else {
+                listView.mj_footer = footer
+                listView.mj_footer.endRefreshing()
+            }
+        }
+        
+        reloadData()
+        setStatus(.idle)
+        lastItemCount = listView.itemsCount()
         
     }
     
-    @objc func loadNew() -> Void {
+    @objc public func loadNewData() -> Void {
         setStatus(.new)
         setRange(NSMakeRange(0, self.conf.length))
         lastItemCount = 0
-        let sel: Selector = NSSelectorFromString("loadNew")
+        let sel: Selector = NSSelectorFromString("loadNewData")
+        if listView.responds(to: sel) {listView.perform(sel, with: nil)}
+    }
+    
+    @objc public func reloadData() -> Void {
+        let sel: Selector = NSSelectorFromString("reloadData")
         if listView.responds(to: sel) {
             listView.perform(sel, with: nil)
+        }else {
+            listView.setNeedsDisplay()
         }
     }
     
-    @objc func loadMore() -> Void {
-        
+    public func beginning() -> Void {
+        header.beginRefreshing();
     }
     
-    func beginning() -> Void {
-        
-    }
-    
-    lazy var header: RefreshHeader = {
-        let view: RefreshHeader = RefreshHeader.init(refreshingTarget: self, refreshingAction: #selector(loadNew))
+    private var listView: UIScrollView!
+
+    private lazy var header: RefreshHeader = {
+        let view: RefreshHeader = RefreshHeader.init(refreshingTarget: self, refreshingAction: #selector(loadNewData))
         view.setTitle("下拉刷新", for: .idle)
         view.setTitle("释放更新", for: .pulling)
         view.setTitle("加载中...", for: .refreshing)
@@ -186,8 +209,8 @@ public class List: NSObject {
         return view
     }()
     
-    lazy var footer: RefreshFotter = {
-        let view: RefreshFotter = RefreshFotter.init(refreshingTarget: self, refreshingAction: #selector(loadMore))
+    private lazy var footer: RefreshFotter = {
+        let view: RefreshFotter = RefreshFotter.init(refreshingTarget: self, refreshingAction: #selector(loadMoreData))
         view.setTitle("上拉加载更多", for: .idle)
         view.setTitle("加载中...", for: .refreshing)
         view.setTitle("没有更多数据", for: .noMoreData)
@@ -196,10 +219,48 @@ public class List: NSObject {
         return view
     }()
     
+    private var blankType: BlankType! {
+        didSet {
+            if self.conf.blankData.isEmpty {
+                self.blank = Blank.defaultBlank(type: blankType)
+            }else {
+                if let blank = self.conf.blankData[blankType] {
+                    self.blank = blank
+                }else {
+                    self.blank = Blank.defaultBlank(type: blankType)
+                }
+            }
+            
+            self.blank?.tap = {
+                (tapGesture) in
+                if !self.blank.isAnimating {
+                    self.blank.isAnimating = true
+                    self.listView.reloadBlank()
+                    self.loadNewData()
+                }
+            }
+            
+            self.listView.setBlank(self.blank)
+            self.listView.reloadBlank()
+        }
+    }
+    
+    private var blank: Blank!
+    
+    private var lastItemCount: Int!
+    
+    @objc func loadMoreData() -> Void {
+        if status == .new {return;}
+        setStatus(.more)
+        let loc: Int = Int(ceilf((Float(self.listView.itemsCount()) / Float(self.conf.length))))
+        setRange(NSMakeRange(loc > 0 ? loc : 1, conf.length))
+        let sel: Selector = NSSelectorFromString("loadMoreData")
+        if self.listView.responds(to: sel) {self.listView.perform(sel)}
+    }
     
     public override init() {
         super.init()
-        
+        conf = ListConf()
         setStatus(.idle)
         setRange(NSMakeRange(0, self.conf.length))
         lastItemCount = 0
@@ -239,6 +300,7 @@ extension UIScrollView {
         get {
             return { (cls) -> Void in
                 cls(List())
+
             }
         }
     }
