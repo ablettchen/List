@@ -7,7 +7,7 @@
 
 ## Example
 
-`Objective-C` 版本在这里 [List](https://github.com/ablettchen/ATList)
+`Objective-C` 版本在这里 [ATList](https://github.com/ablettchen/ATList)
 
 1. 通用配置(可选，如不配置，则使用默认)
 
