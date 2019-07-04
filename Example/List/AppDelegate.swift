@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import List
+import Blank
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -16,6 +18,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        ListDefaultConf.share.setupConf {
+            (conf) in
+            conf.loadType = .all
+            conf.loadStrategy = .auto
+            //conf.length = 20
+            conf.blankData = [.fail : Blank(type: .fail,
+                                            image: Blank.defaultBlankImage(type: .fail),
+                                            title: .init(string: "数据请求失败☹️"),
+                                            desc: .init(string: "10014"), tap: nil),
+                              
+                              .noData : Blank(type: .noData,
+                                              image: Blank.defaultBlankImage(type: .fail),
+                                              title: .init(string: "暂时没有数据🙂"),
+                                              desc: .init(string: "哈哈哈~"), tap: nil),
+                              
+                              .noNetwork : Blank(type: .noNetwork,
+                                                 image: Blank.defaultBlankImage(type: .fail),
+                                                 title: .init(string: "貌似没有网络🙄"),
+                                                 desc: .init(string: "请检查设置"), tap: nil)];
+        }
+        
+        
         return true
     }
 
