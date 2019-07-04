@@ -7,11 +7,12 @@
 
 ## Example
 
+`Objective-C` 版本在这里 [List](https://github.com/ablettchen/ATList)
+
 1. 通用配置(可选，如不配置，则使用默认)
 
 ```objectiveC
-ListDefaultConf.share.setupConf {
-            (conf) in
+        ListDefaultConf.share.setupConf { (conf) in
             conf.loadType = .all
             conf.loadStrategy = .auto
             conf.length = 20
@@ -36,7 +37,7 @@ ListDefaultConf.share.setupConf {
 2. 具体页面中使用
 
 ```objectiveC
-tableView.updateListConf { (conf) in
+        tableView.updateListConf { (conf) in
             conf.loadType = .all
             conf.length = 20
             conf.blankData = [.fail : Blank(type: .fail,
@@ -53,6 +54,11 @@ tableView.updateListConf { (conf) in
                 list.finish(error: error)
             })
         }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now()+3) {
+            // 若 conf.loadStrategy = .manual, 则需要手动调用 loadNewData()
+            //self.tableView.atList.loadNewData();
+        };
 ```
 
 To run the example project, clone the repo, and run `pod install` from the Example directory first.

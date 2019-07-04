@@ -37,6 +37,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 list.finish(error: error)
             })
         }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now()+3) {
+            // 若 conf.loadStrategy = .manual, 则需要手动调用 loadNewData()
+            //self.tableView.atList.loadNewData();
+        };
     }
     
     override func viewDidLayoutSubviews() {
@@ -75,7 +80,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             }
             self.addData = true
         }
-        
     }
     
     private lazy var tableView: UITableView = {

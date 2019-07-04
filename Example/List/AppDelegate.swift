@@ -19,8 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
-        ListDefaultConf.share.setupConf {
-            (conf) in
+        ListDefaultConf.share.setupConf { (conf) in
             conf.loadType = .all
             conf.loadStrategy = .auto
             conf.length = 20
@@ -39,8 +38,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                                  title: .init(string: "貌似没有网络🙄"),
                                                  desc: .init(string: "请检查设置"), tap: nil)];
         }
-        
-        
+
         return true
     }
 
