@@ -100,8 +100,8 @@ public class List: NSObject {
         objc_setAssociatedObject(self, &kConf, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         if newValue.loadType == .none {
             if let view = listView {
-                if let header = view.mj_header {
-                    header.removeFromSuperview()
+                if view.mj_header != nil {
+                    view.mj_header = nil
                 }
             }
         }else {

@@ -23,7 +23,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             (conf) in
             conf.loadType = .all
             conf.loadStrategy = .auto
-            //conf.length = 20
+            conf.length = 20
             conf.blankData = [.fail : Blank(type: .fail,
                                             image: Blank.defaultBlankImage(type: .fail),
                                             title: .init(string: "数据请求失败☹️"),

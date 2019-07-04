@@ -22,14 +22,15 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         
         tableView.updateListConf { (conf) in
             conf.loadType = .all
+            conf.length = 20
             conf.blankData = [.fail : Blank(type: .fail,
                                             image: Blank.defaultBlankImage(type: .fail),
                                             title: .init(string: "绘本数据加载失败"),
-                                            desc: .init(string: "10015"), tap: nil)];
+                                            desc: .init(string: "10015"),
+                                            tap: nil)];
         }
         
-        tableView.loadListData {
-            (list) in
+        tableView.loadListData { (list) in
             self.requestData(["offset" : list.range.location, "number" : list.range.length], { (error, models) in
                 if list.status == .new {self.datas.removeAll()}
                 if models != nil {self.datas += models!}
@@ -50,6 +51,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         // Dispose of any resources that can be recreated.
     }
     
+    var addData = false
     private var datas: [String] = [];
     
     private func requestData(_ parameters: [String : Int], _ finished: @escaping ((_ error: NSError?, _ datas: [String]?) -> Void)) -> Void {
@@ -66,9 +68,14 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             }
         }
         DispatchQueue.main.asyncAfter(deadline: .now()+1) {
-            finished(NSError.init(domain: self.description, code: 405, userInfo: [NSLocalizedDescriptionKey : "fail"]), nil)
-            //finished(nil, models)
+            if self.addData {
+                finished(nil, models)
+            }else {
+                finished(NSError.init(domain: self.description, code: 405, userInfo: [NSLocalizedDescriptionKey : "fail"]), nil)
+            }
+            self.addData = true
         }
+        
     }
     
     private lazy var tableView: UITableView = {
