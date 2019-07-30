@@ -302,7 +302,7 @@ extension UIScrollView {
     
     fileprivate var listBlock: ((List) -> Void)? {
         get {
-            return objc_getAssociatedObject(self, &kListClosure) as! ListClosure;
+            return objc_getAssociatedObject(self, &kListClosure) as? ListClosure;
         }
         set {
             objc_setAssociatedObject(self, &kListClosure, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
