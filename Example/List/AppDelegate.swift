@@ -19,26 +19,37 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
+        // 列表配置（可选，如不设置，取默认）
         ListDefaultConf.share.setupConf { (conf) in
             conf.loadType = .all
             conf.loadStrategy = .auto
             conf.length = 20
             conf.blankData = [.fail : Blank(type: .fail,
                                             image: Blank.defaultBlankImage(type: .fail),
-                                            title: .init(string: "数据请求失败☹️"),
-                                            desc: .init(string: "10014"), tap: nil),
+                                            title: .init(string: "请求失败"),
+                                            desc: .init(string: "10010"),
+                                            tap: nil),
                               
                               .noData : Blank(type: .noData,
                                               image: Blank.defaultBlankImage(type: .fail),
-                                              title: .init(string: "暂时没有数据🙂"),
-                                              desc: .init(string: "哈哈哈~"), tap: nil),
+                                              title: .init(string: "没有数据"),
+                                              desc: .init(string: "10011"),
+                                              tap: nil),
                               
                               .noNetwork : Blank(type: .noNetwork,
                                                  image: Blank.defaultBlankImage(type: .fail),
-                                                 title: .init(string: "貌似没有网络🙄"),
-                                                 desc: .init(string: "请检查设置"), tap: nil)];
+                                                 title: .init(string: "没有网络"),
+                                                 desc: .init(string: "10012"),
+                                                 tap: nil)];
         }
-
+        
+        
+        window = UIWindow.init(frame: UIScreen.main.bounds)
+        window?.backgroundColor = .white
+        let navigationController = UINavigationController.init(rootViewController: ExampleListController())
+        window?.rootViewController = navigationController
+        window?.makeKeyAndVisible()
+        
         return true
     }
 

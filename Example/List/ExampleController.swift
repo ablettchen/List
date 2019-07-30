@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  ExampleController.swift
 //  List
 //
 //  Created by ablett on 06/21/2019.
@@ -11,17 +11,29 @@ import Blank
 import List
 import SnapKit
 
-class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class ExampleController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
+    public var loadStrategy: LoadStrategy = .auto
+    public var loadType: LoadType = .new
+    var addData = true
+    private var datas: [String] = [];
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        self.extendedLayoutIncludesOpaqueBars = false
-        self.edgesForExtendedLayout = []
-        self.navigationItem.title = "List"
+        view.backgroundColor = UIColor.init(white: 0.95, alpha: 1);
         
+        extendedLayoutIncludesOpaqueBars = false
+        edgesForExtendedLayout = []
+        
+        if loadStrategy == .manual {
+            navigationItem.rightBarButtonItem = UIBarButtonItem.init(title: "手动加载", style: .plain, target: self, action: #selector(loadDatas))
+        }
+        
+        // 具体列表配置（可选，如不设置，则取 ListDefaultConf，ListDefaultConf 未设置时取 conf）
         tableView.updateListConf { (conf) in
-            conf.loadType = .all
+            conf.loadStrategy = self.loadStrategy
+            conf.loadType = self.loadType
             conf.length = 20
             conf.blankData = [.fail : Blank(type: .fail,
                                             image: Blank.defaultBlankImage(type: .fail),
@@ -30,18 +42,14 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                                             tap: nil)];
         }
         
+        // 加载数据
         tableView.loadListData { (list) in
             self.requestData(["offset" : list.range.location, "number" : list.range.length], { (error, models) in
-                if list.status == .new {self.datas.removeAll()}
+                if list.loadStatus == .new {self.datas.removeAll()}
                 if models != nil {self.datas += models!}
                 list.finish(error: error)
             })
         }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now()+3) {
-            // 若 conf.loadStrategy = .manual, 则需要手动调用 loadNewData()
-            //self.tableView.atList.loadNewData();
-        };
     }
     
     override func viewDidLayoutSubviews() {
@@ -56,20 +64,28 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         // Dispose of any resources that can be recreated.
     }
     
-    var addData = false
-    private var datas: [String] = [];
+    @objc private func loadDatas() -> Void {
+        tableView.atList.loadNewData()
+    }
     
     private func requestData(_ parameters: [String : Int], _ finished: @escaping ((_ error: NSError?, _ datas: [String]?) -> Void)) -> Void {
         print("parameters:\(parameters)")
         var models = [String]()
         let range = NSRange.init(location: parameters["offset"]!, length: parameters["number"]!)
-        if range.location < 2 {
+        
+        if self.loadType == .none || self.loadType == .new {
             for i in 0..<range.length {
                 models.append("\(range.location + i + 1)")
             }
-        }else {
-            for i in 0...1 {
-                models.append("\(range.location + i + 1)")
+        }else if self.loadType == .more || self.loadType == .all {
+            if range.location < 2 {
+                for i in 0..<range.length {
+                    models.append("\(range.location + i + 1)")
+                }
+            }else {
+                for i in 0...1 {
+                    models.append("\(range.location + i + 1)")
+                }
             }
         }
         DispatchQueue.main.asyncAfter(deadline: .now()+1) {
@@ -86,9 +102,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         let view = UITableView.init(frame: CGRect.init(), style: .plain)
         view.dataSource = self
         view.delegate = self
-        view.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        view.register(UITableViewCell.self, forCellReuseIdentifier: NSStringFromClass(UITableViewCell.classForCoder()))
+        view.separatorStyle = .none
         view.backgroundColor = .clear
-        view.tableFooterView = UIView.init()
+        view.tableFooterView = UIView()
+        view.rowHeight = 44.0
         view.estimatedRowHeight = 0.0
         view.estimatedSectionHeaderHeight = 0.0
         view.estimatedSectionFooterHeight = 0.0
@@ -109,9 +127,9 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
     
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell.init(style: .default, reuseIdentifier: "cell")
-        cell.backgroundColor = ((indexPath.row % 2) == 0) ? .white:
-            UIColor.lightGray.withAlphaComponent(0.1);
+        let cell = UITableViewCell.init(style: .default, reuseIdentifier: NSStringFromClass(UITableViewCell.classForCoder()))
+        cell.selectionStyle = .none
+        cell.backgroundColor = ((indexPath.row % 2) == 0) ? .white : UIColor.lightGray.withAlphaComponent(0.1);
         cell.textLabel?.text = "\(datas[indexPath.row])"
         return cell
     }

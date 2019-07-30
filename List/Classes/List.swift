@@ -18,9 +18,9 @@ import Blank
     public var description: String {
         switch self {
         case .none: return "none"
-        case .new:  return "pull refresh"
+        case .new:  return "load new"
         case .more: return "load more"
-        case.all:   return "pull refresh and load more"
+        case.all:   return "load new and load more"
         }
     }
 }
@@ -45,7 +45,7 @@ import Blank
     public var description: String {
         switch self {
         case .idle: return "idle"
-        case .new:  return "pull refresh"
+        case .new:  return "load new"
         case .more: return "load more"
         }
     }
@@ -56,9 +56,9 @@ private var dataLengthMax: Int = 1000
 
 public class ListConf: NSObject {
     
-    public var loadType: LoadType!
-    public var loadStrategy: LoadStrategy!
-    public var length: Int!
+    public var loadType: LoadType = .new
+    public var loadStrategy: LoadStrategy = .auto
+    public var length: Int = dataLengthDefault
     
     public var blankData: [BlankType:Blank]!
     
@@ -86,26 +86,14 @@ private var kListView = "kListView"
 public class List: NSObject {
     
     public var conf: ListConf! {
-        get {
-            if let conf = objc_getAssociatedObject(self, &kConf) as? ListConf {
-                return conf;
-            }
-            let conf = ListConf()
-            setConf(conf)
-            return conf
-        }
-    }
-    
-    fileprivate func setConf(_ newValue: ListConf) -> Void {
-        objc_setAssociatedObject(self, &kConf, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-        if newValue.loadType == .none {
-            if let view = listView {
-                if view.mj_header != nil {
-                    view.mj_header = nil
+        didSet {
+            if conf.loadType == .none || conf.loadType == .more {
+                if let view = listView {
+                    if view.mj_header != nil {
+                        view.mj_header = nil
+                    }
                 }
-            }
-        }else {
-            if newValue.loadStrategy == .auto {
+            }else if conf.loadType == .new || conf.loadType == .all {
                 if let view = listView {
                     view.mj_header = header
                 }
@@ -113,7 +101,7 @@ public class List: NSObject {
         }
     }
     
-    public var status: LoadStatus! {
+    public var loadStatus: LoadStatus! {
         get {
             if let status = objc_getAssociatedObject(self, &kLoadStatus) as? LoadStatus {
                 return status;
@@ -145,33 +133,32 @@ public class List: NSObject {
     
     public func finish(error: Error?) -> Void {
         if blank != nil {
-            if blank.isAnimating {blank.isAnimating = false}
+            if blank.isAnimating {
+                blank.isAnimating = false
+                listView.reloadBlank()
+            }
         }
         
-        listView.reloadBlank()
+        // 解决非控件触发的刷新（使用者直接调用 finish:）而导致 loadStatus 无法得到正确的状态，致使无法正确显示页面，故此处需要重设 loadStatus = ATLoadStatusNew
+        if loadStatus == .idle {setStatus(.new)}
         
-        if conf.loadType == .none {setStatus(.new)}
-        
-        if status == .new {
+        if loadStatus == .new {
 
-            listView.mj_header.endRefreshing()
-            if (listView.mj_footer != nil) {
-                listView.mj_footer.resetNoMoreData()
-            }
+            if (listView.mj_header != nil) {listView.mj_header.endRefreshing()}
+            if (listView.mj_footer != nil) {listView.mj_footer.resetNoMoreData()}
+            
             if listView.itemsCount() == 0 {
                 blankType = (error != nil) ? .fail : .noData
             }else {
-                if conf.loadType == .all {
+                if conf.loadType == .more || conf.loadType == .all {
                     if listView.itemsCount() >= conf.length {
-                        if conf.loadStrategy == .auto {
-                            listView.mj_footer = footer
-                        }
+                        listView.mj_footer = footer
                     }else {
                         listView.mj_footer = nil
                     }
                 }
             }
-        }else if status == .more {
+        }else if loadStatus == .more {
             if (listView.itemsCount() - lastItemCount) < range.length {
                 listView.mj_footer.endRefreshingWithNoMoreData()
             }else {
@@ -187,9 +174,13 @@ public class List: NSObject {
     }
     
     @objc public func loadNewData() -> Void {
+        if loadStatus != .idle {return}
         setStatus(.new)
         setRange(NSMakeRange(0, self.conf.length))
         lastItemCount = 0
+        if conf.loadStrategy == .manual && (conf.loadType == .new || conf.loadType == .all)  {
+            beginning()
+        }
         listView.loadNewData()
     }
     
@@ -263,7 +254,7 @@ public class List: NSObject {
     private var lastItemCount: Int!
     
     @objc func loadMoreData() -> Void {
-        if status == .new {return;}
+        if loadStatus != .idle {return}
         setStatus(.more)
         let loc: Int = Int(ceilf((Float(listView.itemsCount() / conf.length))))
         setRange(NSMakeRange((loc > 0 ? loc : 1) * conf.length, conf.length))
@@ -272,6 +263,7 @@ public class List: NSObject {
     
     public override init() {
         super.init()
+        conf = ListConf()
         setStatus(.idle)
         setRange(NSMakeRange(0, conf.length))
         lastItemCount = 0
@@ -333,7 +325,7 @@ extension UIScrollView {
     }
 
     public func updateListConf(listConfClosure: ListConfClosure) -> Void {
-        let conf: ListConf!
+        var conf: ListConf!
         if let c = ListDefaultConf.share.conf {
             conf = c
         }else {
@@ -347,7 +339,7 @@ extension UIScrollView {
                 conf.length = dataLengthDefault
             }
         }
-        self.atList.setConf(conf)
+        self.atList.conf = conf;
         
         listConfClosure(conf)
     }
@@ -357,22 +349,24 @@ extension UIScrollView {
         self.listBlock = listClosure
         self.atList.listView = self
         
-        let conf: ListConf!
+        var conf: ListConf!
         if let c = ListDefaultConf.share.conf {
             conf = c
         }else {
             conf = self.atList.conf
         }
-        self.atList.setConf(conf)
         
+        self.atList.conf = conf;
         if self.atList.conf.loadStrategy == .auto {
-            if self.atList.conf.loadType == .none {
+            if self.atList.conf.loadType == .none || self.atList.conf.loadType == .more {
                 self.atList.setStatus(.new)
                 self.atList.setRange(NSMakeRange(0, self.atList.conf.length))
+                if self.listBlock != nil {
+                    self.listBlock!(self.atList)
+                }
             }else {
                 self.atList.beginning()
             }
-            
         }
     }
 
