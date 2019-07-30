@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'List'
-  s.version          = '0.1.1'
+  s.version          = '0.1.2'
   s.summary          = 'Quick configuration pull-down refresh, pull-up loading, blank page, for UITableView, UICollectionView, UIScrollView.'
   s.homepage         = 'https://github.com/ablettchen/List'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }

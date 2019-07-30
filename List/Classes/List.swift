@@ -133,11 +133,9 @@ public class List: NSObject {
     
     public func finish(error: Error?) -> Void {
         if blank != nil {
-            if blank.isAnimating {
-                blank.isAnimating = false
-                listView.reloadBlank()
-            }
+            if blank.isAnimating {blank.isAnimating = false}
         }
+        listView.reloadBlank()
         
         // 解决非控件触发的刷新（使用者直接调用 finish:）而导致 loadStatus 无法得到正确的状态，致使无法正确显示页面，故此处需要重设 loadStatus = ATLoadStatusNew
         if loadStatus == .idle {setStatus(.new)}
