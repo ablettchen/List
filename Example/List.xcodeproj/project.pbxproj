@@ -181,6 +181,7 @@
 				TargetAttributes = {
 					607FACCF1AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
+						DevelopmentTeam = 37Z4FSY7RD;
 						LastSwiftMigration = 1100;
 					};
 				};
@@ -409,6 +410,7 @@
 			baseConfigurationReference = BA56A0F2C0854ABF55390950 /* Pods-List_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 37Z4FSY7RD;
 				INFOPLIST_FILE = List/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
@@ -423,6 +425,7 @@
 			baseConfigurationReference = BC608D700978CDF00909446E /* Pods-List_Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 37Z4FSY7RD;
 				INFOPLIST_FILE = List/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;

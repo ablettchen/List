@@ -39,12 +39,12 @@ class ExampleListController: UIViewController, UITableViewDataSource, UITableVie
     
     func addDatas() -> Void {
         datas.removeAll()
-        datas.append(Example(loadStrategy: .auto, loadType: .none))
+        datas.append(Example(loadStrategy: .auto, loadType: .none_))
         datas.append(Example(loadStrategy: .auto, loadType: .new))
         datas.append(Example(loadStrategy: .auto, loadType: .more))
         datas.append(Example(loadStrategy: .auto, loadType: .all))
         
-        datas.append(Example(loadStrategy: .manual, loadType: .none))
+        datas.append(Example(loadStrategy: .manual, loadType: .none_))
         datas.append(Example(loadStrategy: .manual, loadType: .new))
         datas.append(Example(loadStrategy: .manual, loadType: .more))
         datas.append(Example(loadStrategy: .manual, loadType: .all))

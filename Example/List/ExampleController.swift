@@ -73,7 +73,7 @@ class ExampleController: UIViewController, UITableViewDataSource, UITableViewDel
         var models = [String]()
         let range = NSRange.init(location: parameters["offset"]!, length: parameters["number"]!)
         
-        if self.loadType == .none || self.loadType == .new {
+        if self.loadType == .none_ || self.loadType == .new {
             for i in 0..<range.length {
                 models.append("\(range.location + i + 1)")
             }
