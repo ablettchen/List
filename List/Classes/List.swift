@@ -10,14 +10,14 @@ import Blank
 
 
 @objc public enum LoadType : Int, CustomStringConvertible {
-    case none_
+    case `none`
     case new
     case more
     case all
     
     public var description: String {
         switch self {
-        case .none_: return "none"
+        case .`none`: return "none"
         case .new:   return "load new"
         case .more:  return "load more"
         case .all:   return "load new and load more"
@@ -87,7 +87,7 @@ public class List: NSObject {
     
     public var conf: ListConf? {
         didSet {
-            if conf?.loadType == .none_ || conf?.loadType == .more {
+            if conf?.loadType == .`none` || conf?.loadType == .more {
                 if let view = listView {
                     if view.mj_header != nil {
                         view.mj_header = nil
@@ -121,7 +121,7 @@ public class List: NSObject {
             if let range = objc_getAssociatedObject(self, &kRange) as? NSRange {
                 return range;
             }
-            let lentgh = ((conf?.loadType == .new || conf?.loadType == .none_) ? dataLengthMax : dataLengthDefault)
+            let lentgh = ((conf?.loadType == .new || conf?.loadType == .`none`) ? dataLengthMax : dataLengthDefault)
             let range = NSMakeRange(0, conf?.length ?? lentgh)
             setRange(range)
             return range
@@ -175,7 +175,7 @@ public class List: NSObject {
     @objc public func pull_loadNewData() -> Void {
         if loadStatus != .idle {return}
         setStatus(.new)
-        let length = ((self.conf?.loadType == .new || self.conf?.loadType == .none_) ? dataLengthMax : dataLengthDefault)
+        let length = ((self.conf?.loadType == .new || self.conf?.loadType == .`none`) ? dataLengthMax : dataLengthDefault)
         setRange(NSMakeRange(0, self.conf?.length ?? length))
         lastItemCount = 0
         listView.loadNewData()
@@ -337,7 +337,7 @@ extension UIScrollView {
             conf = ListConf()
         }
         if conf.length == 0 {
-            let lentgh = ((conf?.loadType == .new || conf?.loadType == .none_) ? dataLengthMax : dataLengthDefault)
+            let lentgh = ((conf?.loadType == .new || conf?.loadType == .`none`) ? dataLengthMax : dataLengthDefault)
             conf.length = lentgh
         }
         self.atList.conf = conf;
@@ -350,9 +350,9 @@ extension UIScrollView {
         self.atList.listView = self
         self.atList.conf = (self.atList.conf != nil) ? self.atList.conf : ((ListDefaultConf.share.conf != nil) ? ListDefaultConf.share.conf : ListConf())
         if self.atList.conf?.loadStrategy == .auto {
-            if self.atList.conf?.loadType == .none_ || self.atList.conf?.loadType == .more {
+            if self.atList.conf?.loadType == .`none` || self.atList.conf?.loadType == .more {
                 self.atList.setStatus(.new)
-                let lentgh = ((self.atList.conf?.loadType == .new || self.atList.conf?.loadType == .none_) ? dataLengthMax : dataLengthDefault)
+                let lentgh = ((self.atList.conf?.loadType == .new || self.atList.conf?.loadType == .`none`) ? dataLengthMax : dataLengthDefault)
                 self.atList.setRange(NSMakeRange(0, self.atList.conf?.length ?? lentgh))
                 if self.listBlock != nil {
                     self.listBlock!(self.atList)
