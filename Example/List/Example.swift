@@ -34,7 +34,7 @@ public class Example: NSObject {
         
         var typeDesc: NSString = ""
         switch loadType {
-        case .none_:
+        case .nothing:
             typeDesc = "无刷新"
         case .new:
             typeDesc = "下拉刷新"
