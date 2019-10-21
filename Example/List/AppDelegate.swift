@@ -41,8 +41,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                                  title: .init(string: "没有网络"),
                                                  desc: .init(string: "10012"),
                                                  tap: nil)];
+            conf.loadHeaderStyle = .gif
         }
-        
         
         window = UIWindow.init(frame: UIScreen.main.bounds)
         window?.backgroundColor = .white

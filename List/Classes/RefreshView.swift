@@ -100,6 +100,21 @@ public class RefreshHeader: MJRefreshStateHeader {
     }
 }
 
+public class RefreshGifHeader: MJRefreshGifHeader {
+    public override func prepare() {
+        super.prepare()
+        refreshingImages = []
+    }
+    
+    public var refreshingImages: [UIImage] = [] {
+        didSet {
+            if refreshingImages.count > 0 {
+                setImages(refreshingImages, duration: Double(refreshingImages.count) * 0.03, for: .pulling)
+                setImages(refreshingImages, duration: Double(refreshingImages.count) * 0.03, for: .refreshing)
+            }
+        }
+    }
+}
 
 public class RefreshFotter: MJRefreshAutoStateFooter {
     lazy var arrowView: UIImageView = {

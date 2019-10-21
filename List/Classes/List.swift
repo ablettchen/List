@@ -51,6 +51,18 @@ import Blank
     }
 }
 
+@objc public enum LoadHeaderStyle : Int, CustomStringConvertible {
+    case normal
+    case gif
+    
+    public var description: String {
+        switch self {
+        case .normal: return "normal"
+        case .gif: return "gif"
+        }
+    }
+}
+
 private var dataLengthDefault: Int = 20
 private var dataLengthMax: Int = 1000
 
@@ -62,6 +74,9 @@ public class ListConf: NSObject {
     
     public var blankData: [BlankType:Blank]!
     
+    public var loadHeaderStyle: LoadHeaderStyle = .normal
+    public var refreshingImages: [UIImage] = []
+    
     public func reset() -> Void {
         loadType = .new
         loadStrategy = .auto
@@ -70,6 +85,15 @@ public class ListConf: NSObject {
         blankData = [.fail      : Blank.defaultBlank(type: .fail),
                      .noData    : Blank.defaultBlank(type: .noData),
                      .noNetwork : Blank.defaultBlank(type: .noNetwork)]
+        
+        
+        var gifImages: [UIImage] = []
+        for index in 1...23 {
+            if let image = UIImage(named: "refreshGif_\(index)", in: List.listBundle(), compatibleWith: nil) {
+                gifImages.append(image)
+            }
+        }
+        self.refreshingImages = gifImages
     }
     
     override init() {
@@ -95,7 +119,12 @@ public class List: NSObject {
                 }
             }else if conf?.loadType == .new || conf?.loadType == .all {
                 if let view = listView {
-                    view.mj_header = header
+                    if conf?.loadHeaderStyle == .normal {
+                        view.mj_header = header
+                    }else if conf?.loadHeaderStyle == .gif {
+                        view.mj_header = gifHeader
+                    }
+                    
                 }
             }
         }
@@ -130,6 +159,13 @@ public class List: NSObject {
     
     fileprivate func setRange(_ range: NSRange) -> Void {
         objc_setAssociatedObject(self, &kRange, range, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+    }
+    
+    fileprivate class func listBundle() -> Bundle? {
+        if let bundlePath = Bundle(for: List.self).resourcePath?.appending("/List.bundle") {
+            return Bundle(path: bundlePath)
+        }
+        return nil
     }
     
     public func finish(error: Error?) -> Void {
@@ -199,7 +235,11 @@ public class List: NSObject {
     }
     
     public func beginning() -> Void {
-        header.beginRefreshing();
+        if conf?.loadHeaderStyle == .normal {
+            header.beginRefreshing();
+        }else if conf?.loadHeaderStyle == .gif {
+            gifHeader.beginRefreshing();
+        }
     }
     
     fileprivate var listView: UIScrollView!
@@ -215,6 +255,17 @@ public class List: NSObject {
         view.lastUpdatedTimeLabel.textColor = .init(white: 0.584, alpha: 1)
         view.isAutomaticallyChangeAlpha = true
         view.lastUpdatedTimeLabel.isHidden = true
+        return view
+    }()
+    
+    private lazy var gifHeader: RefreshGifHeader = {
+        let view: RefreshGifHeader = RefreshGifHeader.init(refreshingTarget: self, refreshingAction: #selector(pull_loadNewData))
+        view.stateLabel.isHidden = true
+        view.isAutomaticallyChangeAlpha = true
+        view.lastUpdatedTimeLabel.isHidden = true
+        if let images = conf?.refreshingImages {
+            view.refreshingImages = images
+        }
         return view
     }()
     
@@ -330,12 +381,7 @@ extension UIScrollView {
     }
 
     public func updateListConf(listConfClosure: ListConfClosure) -> Void {
-        var conf: ListConf!
-        if self.atList.conf != nil {
-            conf = self.atList.conf
-        }else {
-            conf = ListConf()
-        }
+        var conf: ListConf! = (self.atList.conf != nil) ? self.atList.conf : ((ListDefaultConf.share.conf != nil) ? ListDefaultConf.share.conf : ListConf())
         if conf.length == 0 {
             let lentgh = ((conf?.loadType == .new || conf?.loadType == .nothing) ? dataLengthMax : dataLengthDefault)
             conf.length = lentgh
@@ -343,7 +389,6 @@ extension UIScrollView {
         self.atList.conf = conf;
         listConfClosure(conf)
     }
-    
 
     public func loadListData(_ listClosure: @escaping ListClosure) -> Void {
         self.listBlock = listClosure

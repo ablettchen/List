@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'List'
-  s.version          = '0.1.5'
+  s.version          = '0.1.6'
   s.summary          = 'Quick configuration pull-down refresh, pull-up loading, blank page, for UITableView, UICollectionView, UIScrollView.'
   s.homepage         = 'https://github.com/ablettchen/List'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
@@ -20,10 +20,9 @@ Pod::Spec.new do |s|
   s.swift_versions = '4.0'
   
   s.source_files = 'List/Classes/**/*'
-  
-  # s.resource_bundles = {
-  #   'List' => ['List/Assets/*.xcassets']
-  # }
+  s.resource_bundles = {
+      'List' => ['List/Assets/*.xcassets']
+  }
   # s.public_header_files = 'Pod/Classes/**/*.h'
 
   s.dependency 'Blank'
