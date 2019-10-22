@@ -102,6 +102,19 @@ public class ListConf: NSObject {
     }
 }
 
+extension ListConf: NSCopying {
+    public func copy(with zone: NSZone? = nil) -> Any {
+        let conf = ListConf.init()
+        conf.loadType = loadType
+        conf.loadStrategy = loadStrategy
+        conf.length = length
+        conf.blankData = blankData
+        conf.loadHeaderStyle = loadHeaderStyle
+        conf.refreshingImages = refreshingImages
+        return conf
+    }
+}
+
 private var kConf = "kConf"
 private var kLoadStatus = "kLoadStatus"
 private var kRange = "kRange"
@@ -381,7 +394,8 @@ extension UIScrollView {
     }
 
     public func updateListConf(listConfClosure: ListConfClosure) -> Void {
-        var conf: ListConf! = (self.atList.conf != nil) ? self.atList.conf : ((ListDefaultConf.share.conf != nil) ? ListDefaultConf.share.conf : ListConf())
+        let defaultConf: ListConf = ListDefaultConf.share.conf?.copy() as! ListConf
+        let conf: ListConf! = (self.atList.conf != nil) ? self.atList.conf : ((defaultConf != nil) ? defaultConf : ListConf())
         if conf.length == 0 {
             let lentgh = ((conf?.loadType == .new || conf?.loadType == .nothing) ? dataLengthMax : dataLengthDefault)
             conf.length = lentgh
@@ -393,7 +407,8 @@ extension UIScrollView {
     public func loadListData(_ listClosure: @escaping ListClosure) -> Void {
         self.listBlock = listClosure
         self.atList.listView = self
-        self.atList.conf = (self.atList.conf != nil) ? self.atList.conf : ((ListDefaultConf.share.conf != nil) ? ListDefaultConf.share.conf : ListConf())
+        let defaultConf: ListConf = ListDefaultConf.share.conf?.copy() as! ListConf
+        self.atList.conf = (self.atList.conf != nil) ? self.atList.conf : ((defaultConf != nil) ? defaultConf : ListConf())
         if self.atList.conf?.loadStrategy == .auto {
             if self.atList.conf?.loadType == .nothing || self.atList.conf?.loadType == .more {
                 self.atList.setStatus(.new)
