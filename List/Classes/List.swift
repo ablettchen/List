@@ -137,7 +137,6 @@ public class List: NSObject {
                     }else if conf?.loadHeaderStyle == .gif {
                         view.mj_header = gifHeader
                     }
-                    
                 }
             }
         }
@@ -192,9 +191,9 @@ public class List: NSObject {
         
         if loadStatus == .new {
 
-            if (listView.mj_header != nil) {listView.mj_header.endRefreshing()}
-            if (listView.mj_footer != nil) {listView.mj_footer.resetNoMoreData()}
-            
+            listView.mj_header?.endRefreshing()
+            listView.mj_footer?.resetNoMoreData()
+
             if listView.itemsCount() == 0 {
                 blankType = (error != nil) ? .fail : .noData
             }else {
@@ -395,9 +394,9 @@ extension UIScrollView {
 
     public func updateListConf(listConfClosure: ListConfClosure) -> Void {
         let defaultConf: ListConf = ListDefaultConf.share.conf?.copy() as! ListConf
-        let conf: ListConf! = (self.atList.conf != nil) ? self.atList.conf : ((defaultConf != nil) ? defaultConf : ListConf())
+        let conf: ListConf = self.atList.conf ?? defaultConf
         if conf.length == 0 {
-            let lentgh = ((conf?.loadType == .new || conf?.loadType == .nothing) ? dataLengthMax : dataLengthDefault)
+            let lentgh = ((conf.loadType == .new || conf.loadType == .nothing) ? dataLengthMax : dataLengthDefault)
             conf.length = lentgh
         }
         self.atList.conf = conf;
@@ -408,15 +407,13 @@ extension UIScrollView {
         self.listBlock = listClosure
         self.atList.listView = self
         let defaultConf: ListConf = ListDefaultConf.share.conf?.copy() as! ListConf
-        self.atList.conf = (self.atList.conf != nil) ? self.atList.conf : ((defaultConf != nil) ? defaultConf : ListConf())
+        self.atList.conf = self.atList.conf ?? defaultConf
         if self.atList.conf?.loadStrategy == .auto {
             if self.atList.conf?.loadType == .nothing || self.atList.conf?.loadType == .more {
                 self.atList.setStatus(.new)
                 let lentgh = ((self.atList.conf?.loadType == .new || self.atList.conf?.loadType == .nothing) ? dataLengthMax : dataLengthDefault)
                 self.atList.setRange(NSMakeRange(0, self.atList.conf?.length ?? lentgh))
-                if self.listBlock != nil {
-                    self.listBlock!(self.atList)
-                }
+                self.listBlock?(self.atList)
             }else {
                 self.atList.beginning()
             }
@@ -424,14 +421,10 @@ extension UIScrollView {
     }
 
     fileprivate func loadNewData() -> Void {
-        if self.listBlock != nil {
-            self.listBlock!(self.atList)
-        }
+        self.listBlock?(self.atList)
     }
     
     fileprivate func loadMoreData() -> Void {
-        if self.listBlock != nil {
-            self.listBlock!(self.atList)
-        }
+        self.listBlock?(self.atList)
     }
 }
