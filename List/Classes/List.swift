@@ -207,10 +207,10 @@ public class List: NSObject {
             }
         }else if loadStatus == .more {
             if (listView.itemsCount() - lastItemCount) < range.length {
-                listView.mj_footer.endRefreshingWithNoMoreData()
+                listView.mj_footer?.endRefreshingWithNoMoreData()
             }else {
                 listView.mj_footer = footer
-                listView.mj_footer.endRefreshing()
+                listView.mj_footer?.endRefreshing()
             }
         }
         
@@ -261,20 +261,20 @@ public class List: NSObject {
         view.setTitle("下拉刷新", for: .idle)
         view.setTitle("释放更新", for: .pulling)
         view.setTitle("加载中...", for: .refreshing)
-        view.stateLabel.font = .systemFont(ofSize: 13)
-        view.lastUpdatedTimeLabel.font = .systemFont(ofSize: 14)
-        view.stateLabel.textColor = .init(white: 0.584, alpha: 1)
-        view.lastUpdatedTimeLabel.textColor = .init(white: 0.584, alpha: 1)
+        view.stateLabel!.font = .systemFont(ofSize: 13)
+        view.lastUpdatedTimeLabel!.font = .systemFont(ofSize: 14)
+        view.stateLabel!.textColor = .init(white: 0.584, alpha: 1)
+        view.lastUpdatedTimeLabel!.textColor = .init(white: 0.584, alpha: 1)
         view.isAutomaticallyChangeAlpha = true
-        view.lastUpdatedTimeLabel.isHidden = true
+        view.lastUpdatedTimeLabel!.isHidden = true
         return view
     }()
     
     private lazy var gifHeader: RefreshGifHeader = {
         let view: RefreshGifHeader = RefreshGifHeader.init(refreshingTarget: self, refreshingAction: #selector(pull_loadNewData))
-        view.stateLabel.isHidden = true
+        view.stateLabel!.isHidden = true
         view.isAutomaticallyChangeAlpha = true
-        view.lastUpdatedTimeLabel.isHidden = true
+        view.lastUpdatedTimeLabel!.isHidden = true
         if let images = conf?.refreshingImages {
             view.refreshingImages = images
         }
@@ -286,8 +286,8 @@ public class List: NSObject {
         view.setTitle("上拉加载更多", for: .idle)
         view.setTitle("加载中...", for: .refreshing)
         view.setTitle("没有更多数据", for: .noMoreData)
-        view.stateLabel.font = .systemFont(ofSize: 13)
-        view.stateLabel.textColor = .init(white: 0.584, alpha: 1)
+        view.stateLabel!.font = .systemFont(ofSize: 13)
+        view.stateLabel!.textColor = .init(white: 0.584, alpha: 1)
         return view
     }()
     

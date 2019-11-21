@@ -75,11 +75,11 @@ public class RefreshHeader: MJRefreshStateHeader {
     public override func placeSubviews() {
         super.placeSubviews()
         var arrowCenterX: Float = Float(self.mj_w * 0.5)
-        if !self.stateLabel.isHidden {
-            let stateWidth: Float = Float(self.stateLabel.mj_textWith())
+        if !self.stateLabel!.isHidden {
+            let stateWidth: Float = Float(self.stateLabel!.mj_w)
             var timeWidth: Float = 0.0
-            if !self.lastUpdatedTimeLabel.isHidden {
-                timeWidth = Float(self.lastUpdatedTimeLabel.mj_textWith())
+            if !self.lastUpdatedTimeLabel!.isHidden {
+                timeWidth = Float(self.lastUpdatedTimeLabel!.mj_w)
             }
             let textWidth: Float = max(stateWidth, timeWidth)
             arrowCenterX = arrowCenterX - (textWidth / 2 + Float(self.labelLeftInset))
@@ -96,7 +96,7 @@ public class RefreshHeader: MJRefreshStateHeader {
             self.loadingView.center = arrowCenter;
         }
         
-        self.arrowView.tintColor = self.stateLabel.textColor;
+        self.arrowView.tintColor = self.stateLabel!.textColor;
     }
 }
 
@@ -160,7 +160,7 @@ public class RefreshFotter: MJRefreshAutoStateFooter {
         if self.constraints.count == 0 {return}
         var loadingCenterX: Float = Float(self.mj_w * 0.5)
         if !self.isRefreshingTitleHidden {
-            loadingCenterX = loadingCenterX - Float((self.stateLabel.mj_textWith() * 0.5 + self.labelLeftInset))
+            loadingCenterX = loadingCenterX - Float((self.stateLabel!.mj_w * 0.5 + self.labelLeftInset))
         }
         let loadingCenterY: Float = Float(self.mj_h * 0.5)
         self.loadingView.center = CGPoint.init(x: CGFloat(loadingCenterX), y: CGFloat(loadingCenterY))
