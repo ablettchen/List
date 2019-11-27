@@ -12,16 +12,16 @@ import List
 public class Example: NSObject {
     
     public var loadStrategy: LoadStrategy = .auto
-    public var loadType: LoadType = .new
+    public var loadStyle: LoadStyle = .header
     
     public var title: NSString = "自动: 下拉刷新"
     
-    public init(loadStrategy: LoadStrategy, loadType: LoadType) {
+    public init(loadStrategy: LoadStrategy, loadStyle: LoadStyle) {
         
         super.init()
         
         self.loadStrategy = loadStrategy
-        self.loadType = loadType
+        self.loadStyle = loadStyle
         
         var strategyDesc: NSString = ""
         switch loadStrategy {
@@ -33,12 +33,12 @@ public class Example: NSObject {
         }
         
         var typeDesc: NSString = ""
-        switch loadType {
+        switch loadStyle {
         case .nothing:
             typeDesc = "无刷新"
-        case .new:
+        case .header:
             typeDesc = "下拉刷新"
-        case .more:
+        case .footer:
             typeDesc = "上拉加载"
         case .all:
             typeDesc = "下拉刷新 + 上拉加载"

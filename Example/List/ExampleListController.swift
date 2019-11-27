@@ -39,15 +39,15 @@ class ExampleListController: UIViewController, UITableViewDataSource, UITableVie
     
     func addDatas() -> Void {
         datas.removeAll()
-        datas.append(Example(loadStrategy: .auto, loadType: .nothing))
-        datas.append(Example(loadStrategy: .auto, loadType: .new))
-        datas.append(Example(loadStrategy: .auto, loadType: .more))
-        datas.append(Example(loadStrategy: .auto, loadType: .all))
+        datas.append(Example(loadStrategy: .auto, loadStyle: .nothing))
+        datas.append(Example(loadStrategy: .auto, loadStyle: .header))
+        datas.append(Example(loadStrategy: .auto, loadStyle: .footer))
+        datas.append(Example(loadStrategy: .auto, loadStyle: .all))
         
-        datas.append(Example(loadStrategy: .manual, loadType: .nothing))
-        datas.append(Example(loadStrategy: .manual, loadType: .new))
-        datas.append(Example(loadStrategy: .manual, loadType: .more))
-        datas.append(Example(loadStrategy: .manual, loadType: .all))
+        datas.append(Example(loadStrategy: .manual, loadStyle: .nothing))
+        datas.append(Example(loadStrategy: .manual, loadStyle: .header))
+        datas.append(Example(loadStrategy: .manual, loadStyle: .footer))
+        datas.append(Example(loadStrategy: .manual, loadStyle: .all))
     }
     
     private lazy var tableView: UITableView = {
@@ -94,7 +94,7 @@ class ExampleListController: UIViewController, UITableViewDataSource, UITableVie
         let exampleController = ExampleController.init()
         
         exampleController.loadStrategy = example.loadStrategy
-        exampleController.loadType = example.loadType
+        exampleController.loadStyle = example.loadStyle
         exampleController.navigationItem.title = example.title as String
         
         navigationController?.pushViewController(exampleController, animated: true)

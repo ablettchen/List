@@ -9,17 +9,17 @@ import UIKit
 import Blank
 
 
-@objc public enum LoadType : Int, CustomStringConvertible {
+@objc public enum LoadStyle : Int, CustomStringConvertible {
     case nothing
-    case new
-    case more
+    case header
+    case footer
     case all
     
     public var description: String {
         switch self {
         case .nothing: return "nothing"
-        case .new:     return "load new"
-        case .more:    return "load more"
+        case .header:     return "load new"
+        case .footer:    return "load more"
         case .all:     return "load new and load more"
         }
     }
@@ -68,7 +68,7 @@ private var dataLengthMax: Int = 1000
 
 public class ListConf: NSObject {
     
-    public var loadType: LoadType = .new
+    public var loadStyle: LoadStyle = .header
     public var loadStrategy: LoadStrategy = .auto
     public var length: Int = dataLengthMax
     
@@ -78,7 +78,7 @@ public class ListConf: NSObject {
     public var refreshingImages: [UIImage] = []
     
     public func reset() -> Void {
-        loadType = .new
+        loadStyle = .header
         loadStrategy = .auto
         length = dataLengthMax
         
@@ -105,7 +105,7 @@ public class ListConf: NSObject {
 extension ListConf: NSCopying {
     public func copy(with zone: NSZone? = nil) -> Any {
         let conf = ListConf.init()
-        conf.loadType = loadType
+        conf.loadStyle = loadStyle
         conf.loadStrategy = loadStrategy
         conf.length = length
         conf.blankData = blankData
@@ -124,13 +124,13 @@ public class List: NSObject {
     
     public var conf: ListConf? {
         didSet {
-            if conf?.loadType == .nothing || conf?.loadType == .more {
+            if conf?.loadStyle == .nothing || conf?.loadStyle == .footer {
                 if let view = listView {
                     if view.mj_header != nil {
                         view.mj_header = nil
                     }
                 }
-            }else if conf?.loadType == .new || conf?.loadType == .all {
+            }else if conf?.loadStyle == .header || conf?.loadStyle == .all {
                 if let view = listView {
                     if conf?.loadHeaderStyle == .normal {
                         view.mj_header = header
@@ -162,7 +162,7 @@ public class List: NSObject {
             if let range = objc_getAssociatedObject(self, &kRange) as? NSRange {
                 return range;
             }
-            let lentgh = ((conf?.loadType == .new || conf?.loadType == .nothing) ? dataLengthMax : dataLengthDefault)
+            let lentgh = ((conf?.loadStyle == .header || conf?.loadStyle == .nothing) ? dataLengthMax : dataLengthDefault)
             let range = NSMakeRange(0, conf?.length ?? lentgh)
             setRange(range)
             return range
@@ -197,7 +197,7 @@ public class List: NSObject {
             if listView.itemsCount() == 0 {
                 blankType = (error != nil) ? .fail : .noData
             }else {
-                if conf?.loadType == .more || conf?.loadType == .all {
+                if conf?.loadStyle == .footer || conf?.loadStyle == .all {
                     if listView.itemsCount() >= conf?.length ?? dataLengthDefault {
                         listView.mj_footer = footer
                     }else {
@@ -223,14 +223,14 @@ public class List: NSObject {
     @objc public func pull_loadNewData() -> Void {
         if loadStatus != .idle {return}
         setStatus(.new)
-        let length = ((self.conf?.loadType == .new || self.conf?.loadType == .nothing) ? dataLengthMax : dataLengthDefault)
+        let length = ((self.conf?.loadStyle == .header || self.conf?.loadStyle == .nothing) ? dataLengthMax : dataLengthDefault)
         setRange(NSMakeRange(0, self.conf?.length ?? length))
         lastItemCount = 0
         listView.loadNewData()
     }
     
     @objc public func loadNewData() -> Void {
-        if conf?.loadStrategy == .manual && (conf?.loadType == .new || conf?.loadType == .all)  {
+        if conf?.loadStrategy == .manual && (conf?.loadStyle == .header || conf?.loadStyle == .all)  {
             beginning()
         }else {
             pull_loadNewData()
@@ -396,7 +396,7 @@ extension UIScrollView {
         let defaultConf: ListConf = ListDefaultConf.share.conf?.copy() as! ListConf
         let conf: ListConf = self.atList.conf ?? defaultConf
         if conf.length == 0 {
-            let lentgh = ((conf.loadType == .new || conf.loadType == .nothing) ? dataLengthMax : dataLengthDefault)
+            let lentgh = ((conf.loadStyle == .header || conf.loadStyle == .nothing) ? dataLengthMax : dataLengthDefault)
             conf.length = lentgh
         }
         self.atList.conf = conf;
@@ -409,9 +409,9 @@ extension UIScrollView {
         let defaultConf: ListConf = ListDefaultConf.share.conf?.copy() as! ListConf
         self.atList.conf = self.atList.conf ?? defaultConf
         if self.atList.conf?.loadStrategy == .auto {
-            if self.atList.conf?.loadType == .nothing || self.atList.conf?.loadType == .more {
+            if self.atList.conf?.loadStyle == .nothing || self.atList.conf?.loadStyle == .footer {
                 self.atList.setStatus(.new)
-                let lentgh = ((self.atList.conf?.loadType == .new || self.atList.conf?.loadType == .nothing) ? dataLengthMax : dataLengthDefault)
+                let lentgh = ((self.atList.conf?.loadStyle == .header || self.atList.conf?.loadStyle == .nothing) ? dataLengthMax : dataLengthDefault)
                 self.atList.setRange(NSMakeRange(0, self.atList.conf?.length ?? lentgh))
                 self.listBlock?(self.atList)
             }else {

@@ -14,7 +14,7 @@
 ```swift
         // 列表配置（可选，如不设置，取默认）
         ListDefaultConf.share.setupConf { (conf) in
-            conf.loadType = .all
+            conf.loadStyle = .all
             conf.loadStrategy = .auto
             conf.length = 20
             conf.blankData = [.fail : Blank(type: .fail,
@@ -44,7 +44,7 @@
         // 具体列表配置（可选，如不设置，则取 ListDefaultConf，ListDefaultConf 未设置时取 conf）
         tableView.updateListConf { (conf) in
             conf.loadStrategy = self.loadStrategy
-            conf.loadType = self.loadType
+            conf.loadStyle = self.loadStyle
             conf.length = 20
             conf.blankData = [.fail : Blank(type: .fail,
                                             image: Blank.defaultBlankImage(type: .fail),

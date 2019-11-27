@@ -14,7 +14,7 @@ import SnapKit
 class ExampleController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
     public var loadStrategy: LoadStrategy = .auto
-    public var loadType: LoadType = .new
+    public var loadStyle: LoadStyle = .header
     var addData = true
     private var datas: [String] = [];
     
@@ -33,7 +33,7 @@ class ExampleController: UIViewController, UITableViewDataSource, UITableViewDel
         // 具体列表配置（可选，如不设置，则取 ListDefaultConf，ListDefaultConf 未设置时取 conf）
         tableView.updateListConf { (conf) in
             conf.loadStrategy = self.loadStrategy
-            conf.loadType = self.loadType
+            conf.loadStyle = self.loadStyle
             conf.length = 20
             conf.blankData = [.fail : Blank(type: .fail,
                                             image: Blank.defaultBlankImage(type: .fail),
@@ -73,11 +73,11 @@ class ExampleController: UIViewController, UITableViewDataSource, UITableViewDel
         var models = [String]()
         let range = NSRange.init(location: parameters["offset"]!, length: parameters["number"]!)
         
-        if self.loadType == .nothing || self.loadType == .new {
+        if self.loadStyle == .nothing || self.loadStyle == .header {
             for i in 0..<range.length {
                 models.append("\(range.location + i + 1)")
             }
-        }else if self.loadType == .more || self.loadType == .all {
+        }else if self.loadStyle == .footer || self.loadStyle == .all {
             if range.location < 2 {
                 for i in 0..<range.length {
                     models.append("\(range.location + i + 1)")
