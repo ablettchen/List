@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'List'
-  s.version          = '0.2.2'
+  s.version          = '0.2.3'
   s.summary          = 'Quick configuration pull-down refresh, pull-up loading, blank page, for UITableView, UICollectionView, UIScrollView.'
   s.homepage         = 'https://github.com/ablettchen/List'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
@@ -27,5 +27,6 @@ Pod::Spec.new do |s|
 
   s.dependency 'Blank'
   s.dependency 'MJRefresh'
+  s.dependency 'Reachability'
   
 end

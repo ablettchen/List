@@ -7,6 +7,7 @@
 
 import UIKit
 import Blank
+import Reachability
 
 
 @objc public enum LoadStyle : Int, CustomStringConvertible {
@@ -296,10 +297,19 @@ public class List: NSObject {
             if self.conf?.blankData.isEmpty ?? true {
                 blank = Blank.defaultBlank(type: blankType)
             }else {
+                let rech = Reachability.forInternetConnection()
                 if let b = conf?.blankData[blankType] {
-                    blank = b
+                    if rech?.currentReachabilityStatus() == .NotReachable {
+                        blank = conf?.blankData[.noNetwork]
+                    }else {
+                        blank = b
+                    }
                 }else {
-                    blank = Blank.defaultBlank(type: blankType)
+                    if rech?.currentReachabilityStatus() == .NotReachable {
+                        blank = Blank.defaultBlank(type: .noNetwork)
+                    }else {
+                        blank = Blank.defaultBlank(type: blankType)
+                    }
                 }
             }
             
