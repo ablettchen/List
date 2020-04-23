@@ -255,7 +255,7 @@ public class List: NSObject {
         }
     }
     
-    fileprivate var listView: UIScrollView!
+    fileprivate weak var listView: UIScrollView!
     
     private lazy var header: RefreshHeader = {
         let view: RefreshHeader = RefreshHeader.init(refreshingTarget: self, refreshingAction: #selector(pull_loadNewData))
