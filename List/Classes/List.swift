@@ -18,10 +18,10 @@ import Reachability
     
     public var description: String {
         switch self {
-        case .nothing: return "nothing"
-        case .header:     return "load new"
-        case .footer:    return "load more"
-        case .all:     return "load new and load more"
+        case .nothing   : return "nothing"
+        case .header    : return "load new"
+        case .footer    : return "load more"
+        case .all       : return "load new and load more"
         }
     }
 }
@@ -32,8 +32,8 @@ import Reachability
     
     public var description: String {
         switch self {
-        case .auto:     return "auto"
-        case .manual:   return "manual"
+        case .auto      : return "auto"
+        case .manual    : return "manual"
         }
     }
 }
@@ -45,9 +45,9 @@ import Reachability
     
     public var description: String {
         switch self {
-        case .idle: return "idle"
-        case .new:  return "load new"
-        case .more: return "load more"
+        case .idle  : return "idle"
+        case .new   : return "load new"
+        case .more  : return "load more"
         }
     }
 }
@@ -58,8 +58,8 @@ import Reachability
     
     public var description: String {
         switch self {
-        case .normal: return "normal"
-        case .gif: return "gif"
+        case .normal : return "normal"
+        case .gif    : return "gif"
         }
     }
 }
@@ -82,7 +82,6 @@ public class ListConf: NSObject {
         loadStyle = .header
         loadStrategy = .auto
         length = dataLengthMax
-        
         blankData = [.fail      : Blank.defaultBlank(type: .fail),
                      .noData    : Blank.defaultBlank(type: .noData),
                      .noNetwork : Blank.defaultBlank(type: .noNetwork)]
@@ -125,18 +124,21 @@ public class List: NSObject {
     
     public var conf: ListConf? {
         didSet {
-            if conf?.loadStyle == .nothing || conf?.loadStyle == .footer {
-                if let view = listView {
-                    if view.mj_header != nil {
-                        view.mj_header = nil
+            if let conf = conf {
+                if conf.loadStyle == .nothing || conf.loadStyle == .footer {
+                    if let view = listView {
+                        guard view.mj_header == nil else {
+                            view.mj_header = nil
+                            return
+                        }
                     }
-                }
-            }else if conf?.loadStyle == .header || conf?.loadStyle == .all {
-                if let view = listView {
-                    if conf?.loadHeaderStyle == .normal {
-                        view.mj_header = header
-                    }else if conf?.loadHeaderStyle == .gif {
-                        view.mj_header = gifHeader
+                }else if conf.loadStyle == .header || conf.loadStyle == .all {
+                    if let view = listView {
+                        if conf.loadHeaderStyle == .normal {
+                            view.mj_header = header
+                        }else if conf.loadHeaderStyle == .gif {
+                            view.mj_header = gifHeader
+                        }
                     }
                 }
             }
@@ -145,9 +147,7 @@ public class List: NSObject {
     
     public var loadStatus: LoadStatus! {
         get {
-            if let status = objc_getAssociatedObject(self, &kLoadStatus) as? LoadStatus {
-                return status;
-            }
+            if let status = objc_getAssociatedObject(self, &kLoadStatus) as? LoadStatus {return status}
             let status: LoadStatus = .idle
             setStatus(status)
             return status
@@ -182,9 +182,8 @@ public class List: NSObject {
     }
     
     public func finish(error: Error?) -> Void {
-        if blank != nil {
-            if blank.isAnimating {blank.isAnimating = false}
-        }
+        
+        if let blank = blank {if blank.isAnimating {blank.isAnimating = false}}
         listView.reloadBlank()
         
         // 解决非控件自动触发的刷新（使用者直接调用 finish:）而导致 loadStatus 无法得到正确的状态，致使无法正确显示页面，故此处需要重设 loadStatus = ATLoadStatusNew
@@ -196,7 +195,7 @@ public class List: NSObject {
             listView.mj_footer?.resetNoMoreData()
 
             if listView.itemsCount() == 0 {
-                blankType = (error != nil) ? .fail : .noData
+                blankType = (error == nil) ? .noData : .fail
             }else {
                 if conf?.loadStyle == .footer || conf?.loadStyle == .all {
                     if listView.itemsCount() >= conf?.length ?? dataLengthDefault {
@@ -214,15 +213,13 @@ public class List: NSObject {
                 listView.mj_footer?.endRefreshing()
             }
         }
-        
         reloadData()
         setStatus(.idle)
         lastItemCount = listView.itemsCount()
-        
     }
     
     @objc public func pull_loadNewData() -> Void {
-        if loadStatus != .idle {return}
+        guard loadStatus == .idle else {return}
         setStatus(.new)
         let length = ((self.conf?.loadStyle == .header || self.conf?.loadStyle == .nothing) ? dataLengthMax : dataLengthDefault)
         setRange(NSMakeRange(0, self.conf?.length ?? length))
@@ -313,9 +310,8 @@ public class List: NSObject {
                 }
             }
             
-            self.blank?.tap = {
-                (tapGesture) in
-                if !self.blank.isAnimating {
+            self.blank?.tap = { (tapGesture) in
+                if self.blank.isAnimating == false {
                     self.blank.isAnimating = true
                     self.listView.reloadBlank()
                     self.loadNewData()
@@ -341,7 +337,6 @@ public class List: NSObject {
     
     public override init() {
         super.init()
-        //conf = ListConf()
         setStatus(.idle)
         setRange(NSMakeRange(0, (conf?.length ?? dataLengthMax)))
         lastItemCount = 0
@@ -378,20 +373,14 @@ public typealias ListConfClosure = (_ conf: ListConf) -> Void
 
 extension UIScrollView {
     
-    fileprivate var listBlock: ((List) -> Void)? {
-        get {
-            return objc_getAssociatedObject(self, &kListClosure) as? ListClosure;
-        }
-        set {
-            objc_setAssociatedObject(self, &kListClosure, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-        }
+    fileprivate var listBlock: ListClosure? {
+        get {return objc_getAssociatedObject(self, &kListClosure) as? ListClosure}
+        set {objc_setAssociatedObject(self, &kListClosure, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)}
     }
     
     public var atList: List! {
         get {
-            if let list = objc_getAssociatedObject(self, &kList) as? List {
-                return list
-            }
+            if let list = objc_getAssociatedObject(self, &kList) as? List {return list}
             let list = List()
             setAtList(list)
             return list
@@ -402,7 +391,7 @@ extension UIScrollView {
         objc_setAssociatedObject(self, &kList, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
     }
 
-    public func updateListConf(listConfClosure: ListConfClosure) -> Void {
+    public func updateListConf(listConfClosure: ListConfClosure?) -> Void {
         let defaultConf: ListConf = ListDefaultConf.share.conf?.copy() as! ListConf
         let conf: ListConf = self.atList.conf ?? defaultConf
         if conf.length == 0 {
@@ -410,7 +399,7 @@ extension UIScrollView {
             conf.length = lentgh
         }
         self.atList.conf = conf;
-        listConfClosure(conf)
+        listConfClosure?(conf)
     }
 
     public func loadListData(_ listClosure: @escaping ListClosure) -> Void {
