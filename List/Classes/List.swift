@@ -184,38 +184,38 @@ public class List: NSObject {
     public func finish(error: Error?) -> Void {
         
         if let blank = blank {if blank.isAnimating {blank.isAnimating = false}}
-        listView.reloadBlank()
+        listView?.reloadBlank()
         
         // 解决非控件自动触发的刷新（使用者直接调用 finish:）而导致 loadStatus 无法得到正确的状态，致使无法正确显示页面，故此处需要重设 loadStatus = ATLoadStatusNew
         if loadStatus == .idle {setStatus(.new)}
         
         if loadStatus == .new {
 
-            listView.mj_header?.endRefreshing()
-            listView.mj_footer?.resetNoMoreData()
+            listView?.mj_header?.endRefreshing()
+            listView?.mj_footer?.resetNoMoreData()
 
-            if listView.itemsCount() == 0 {
+            if listView?.itemsCount() == 0 {
                 blankType = (error == nil) ? .noData : .fail
             }else {
                 if conf?.loadStyle == .footer || conf?.loadStyle == .all {
-                    if listView.itemsCount() >= conf?.length ?? dataLengthDefault {
-                        listView.mj_footer = footer
+                    if listView?.itemsCount() ?? 0 >= conf?.length ?? dataLengthDefault {
+                        listView?.mj_footer = footer
                     }else {
-                        listView.mj_footer = nil
+                        listView?.mj_footer = nil
                     }
                 }
             }
         }else if loadStatus == .more {
-            if (listView.itemsCount() - lastItemCount) < range.length {
-                listView.mj_footer?.endRefreshingWithNoMoreData()
+            if (listView?.itemsCount() ?? 0 - lastItemCount) < range.length {
+                listView?.mj_footer?.endRefreshingWithNoMoreData()
             }else {
-                listView.mj_footer = footer
-                listView.mj_footer?.endRefreshing()
+                listView?.mj_footer = footer
+                listView?.mj_footer?.endRefreshing()
             }
         }
         reloadData()
         setStatus(.idle)
-        lastItemCount = listView.itemsCount()
+        lastItemCount = listView?.itemsCount()
     }
     
     @objc public func pull_loadNewData() -> Void {
@@ -224,7 +224,7 @@ public class List: NSObject {
         let length = ((self.conf?.loadStyle == .header || self.conf?.loadStyle == .nothing) ? dataLengthMax : dataLengthDefault)
         setRange(NSMakeRange(0, self.conf?.length ?? length))
         lastItemCount = 0
-        listView.loadNewData()
+        listView?.loadNewData()
     }
     
     @objc public func loadNewData() -> Void {
@@ -237,10 +237,10 @@ public class List: NSObject {
     
     @objc public func reloadData() -> Void {
         let sel: Selector = NSSelectorFromString("reloadData")
-        if listView.responds(to: sel) {
-            listView.perform(sel, with: nil)
+        if listView?.responds(to: sel) ?? false {
+            listView?.perform(sel, with: nil)
         }else {
-            listView.setNeedsDisplay()
+            listView?.setNeedsDisplay()
         }
     }
     
@@ -252,7 +252,7 @@ public class List: NSObject {
         }
     }
     
-    fileprivate weak var listView: UIScrollView!
+    fileprivate weak var listView: UIScrollView?
     
     private lazy var header: RefreshHeader = {
         let view: RefreshHeader = RefreshHeader.init(refreshingTarget: self, refreshingAction: #selector(pull_loadNewData))
@@ -310,16 +310,16 @@ public class List: NSObject {
                 }
             }
             
-            self.blank?.tap = { (tapGesture) in
-                if self.blank.isAnimating == false {
-                    self.blank.isAnimating = true
-                    self.listView.reloadBlank()
-                    self.loadNewData()
+            self.blank?.tap = { [weak self] (tapGesture) in
+                if self?.blank.isAnimating == false {
+                    self?.blank.isAnimating = true
+                    self?.listView?.reloadBlank()
+                    self?.loadNewData()
                 }
             }
             
-            listView.setBlank(blank)
-            listView.reloadBlank()
+            listView?.setBlank(blank)
+            listView?.reloadBlank()
         }
     }
     
@@ -330,9 +330,9 @@ public class List: NSObject {
     @objc func loadMoreData() -> Void {
         if loadStatus != .idle {return}
         setStatus(.more)
-        let loc: Int = Int(ceilf((Float(listView.itemsCount() / (conf?.length ?? dataLengthDefault)))))
+        let loc: Int = Int(ceilf((Float(listView?.itemsCount() ?? 0 / (conf?.length ?? dataLengthDefault)))))
         setRange(NSMakeRange((loc > 0 ? loc : 1) * (conf?.length ?? dataLengthDefault), (conf?.length ?? dataLengthDefault)))
-        listView.loadMoreData()
+        listView?.loadMoreData()
     }
     
     public override init() {
@@ -356,10 +356,10 @@ public class ListDefaultConf: NSObject {
     
     public var setupConf: (_ closure: (_ conf: ListConf)-> (Void)) -> Void {
         get {
-            return { (cls) -> Void in
+            return { [weak self] (cls) in
                 let conf = ListConf()
                 cls(conf)
-                self.conf = conf
+                self?.conf = conf
             }
         }
     }

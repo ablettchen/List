@@ -37,26 +37,26 @@ public class RefreshHeader: MJRefreshStateHeader {
             super.state = self.state
             if self.state == .idle {
                 if oldValue == .refreshing {
-                    UIView.animate(withDuration: TimeInterval(MJRefreshSlowAnimationDuration), animations: {
-                        self.loadingView.alpha = 0.0
-                    }) { (finished) in
-                        if self.state != .idle {return}
-                        self.loadingView.alpha = 1.0
-                        self.loadingView.stopAnimating()
-                        self.loadingView.isHidden = false
+                    UIView.animate(withDuration: TimeInterval(MJRefreshSlowAnimationDuration), animations: { [weak self] in
+                        self?.loadingView.alpha = 0.0
+                    }) { [weak self] (finished) in
+                        if self?.state != .idle {return}
+                        self?.loadingView.alpha = 1.0
+                        self?.loadingView.stopAnimating()
+                        self?.loadingView.isHidden = false
                     }
                 }else {
                     self.loadingView.stopAnimating()
                     self.arrowView.isHidden = false
-                    UIView.animate(withDuration: TimeInterval(MJRefreshSlowAnimationDuration)) {
-                        self.arrowView.transform = .identity
+                    UIView.animate(withDuration: TimeInterval(MJRefreshSlowAnimationDuration)) { [weak self] in
+                        self?.arrowView.transform = .identity
                     }
                 }
             }else if self.state == .pulling {
                 self.loadingView.stopAnimating()
                 self.arrowView.isHidden = false
-                UIView.animate(withDuration: TimeInterval(MJRefreshSlowAnimationDuration)) {
-                    self.arrowView.transform = .init(rotationAngle: CGFloat(0.000001 - .pi))
+                UIView.animate(withDuration: TimeInterval(MJRefreshSlowAnimationDuration)) { [weak self] in
+                    self?.arrowView.transform = .init(rotationAngle: CGFloat(0.000001 - .pi))
                 }
             }else if self.state == .refreshing {
                 self.loadingView.alpha = 1.0
