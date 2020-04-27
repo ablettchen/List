@@ -198,7 +198,7 @@ public class List: NSObject {
                 blankType = (error == nil) ? .noData : .fail
             }else {
                 if conf?.loadStyle == .footer || conf?.loadStyle == .all {
-                    if listView?.itemsCount() ?? 0 >= conf?.length ?? dataLengthDefault {
+                    if (listView?.itemsCount() ?? 0) >= conf?.length ?? dataLengthDefault {
                         listView?.mj_footer = footer
                     }else {
                         listView?.mj_footer = nil
@@ -206,7 +206,7 @@ public class List: NSObject {
                 }
             }
         }else if loadStatus == .more {
-            if (listView?.itemsCount() ?? 0 - lastItemCount) < range.length {
+            if ((listView?.itemsCount() ?? 0) - lastItemCount) < range.length {
                 listView?.mj_footer?.endRefreshingWithNoMoreData()
             }else {
                 listView?.mj_footer = footer
@@ -330,7 +330,7 @@ public class List: NSObject {
     @objc func loadMoreData() -> Void {
         if loadStatus != .idle {return}
         setStatus(.more)
-        let loc: Int = Int(ceilf((Float(listView?.itemsCount() ?? 0 / (conf?.length ?? dataLengthDefault)))))
+        let loc: Int = Int(ceilf((Float((listView?.itemsCount() ?? 0) / (conf?.length ?? dataLengthDefault)))))
         setRange(NSMakeRange((loc > 0 ? loc : 1) * (conf?.length ?? dataLengthDefault), (conf?.length ?? dataLengthDefault)))
         listView?.loadMoreData()
     }
