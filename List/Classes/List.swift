@@ -69,6 +69,8 @@ private var dataLengthMax: Int = 1000
 
 public class ListConf: NSObject {
     
+    public var customBlankView: UIView?
+    
     public var loadStyle: LoadStyle = .header
     public var loadStrategy: LoadStrategy = .auto
     public var length: Int = dataLengthMax
@@ -79,6 +81,7 @@ public class ListConf: NSObject {
     public var refreshingImages: [UIImage] = []
     
     public func reset() -> Void {
+        customBlankView = nil
         loadStyle = .header
         loadStrategy = .auto
         length = dataLengthMax
@@ -105,6 +108,7 @@ public class ListConf: NSObject {
 extension ListConf: NSCopying {
     public func copy(with zone: NSZone? = nil) -> Any {
         let conf = ListConf.init()
+        conf.customBlankView = customBlankView
         conf.loadStyle = loadStyle
         conf.loadStrategy = loadStrategy
         conf.length = length
@@ -318,6 +322,7 @@ public class List: NSObject {
                 }
             }
             
+            blank.customBlankView = conf?.customBlankView
             listView?.setBlank(blank)
             listView?.reloadBlank()
         }
