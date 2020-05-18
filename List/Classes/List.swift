@@ -10,7 +10,7 @@ import Blank
 import Reachability
 
 
-@objc public enum LoadStyle : Int, CustomStringConvertible {
+@objc public enum LoadStyle: Int, CustomStringConvertible {
     case nothing
     case header
     case footer
@@ -26,7 +26,7 @@ import Reachability
     }
 }
 
-@objc public enum LoadStrategy : Int, CustomStringConvertible {
+@objc public enum LoadStrategy: Int, CustomStringConvertible {
     case auto
     case manual
     
@@ -38,7 +38,7 @@ import Reachability
     }
 }
 
-@objc public enum LoadStatus : Int, CustomStringConvertible {
+@objc public enum LoadStatus: Int, CustomStringConvertible {
     case idle
     case new
     case more
@@ -52,7 +52,7 @@ import Reachability
     }
 }
 
-@objc public enum LoadHeaderStyle : Int, CustomStringConvertible {
+@objc public enum LoadHeaderStyle: Int, CustomStringConvertible {
     case normal
     case gif
     
@@ -75,7 +75,7 @@ public class ListConf: NSObject {
     public var loadStrategy: LoadStrategy = .auto
     public var length: Int = dataLengthMax
     
-    public var blankData: [BlankType:Blank]!
+    public var blankData: [BlankType : Blank]!
     
     public var loadHeaderStyle: LoadHeaderStyle = .normal
     public var refreshingImages: [UIImage] = []
@@ -158,7 +158,7 @@ public class List: NSObject {
         }
     }
     
-    fileprivate func setStatus(_ loadStatus: LoadStatus) -> Void {
+    fileprivate func setStatus(_ loadStatus: LoadStatus) {
         objc_setAssociatedObject(self, &kLoadStatus, loadStatus, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
     }
     
@@ -174,7 +174,7 @@ public class List: NSObject {
         }
     }
     
-    fileprivate func setRange(_ range: NSRange) -> Void {
+    fileprivate func setRange(_ range: NSRange) {
         objc_setAssociatedObject(self, &kRange, range, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
     }
     
@@ -185,7 +185,7 @@ public class List: NSObject {
         return nil
     }
     
-    public func finish(error: Error?) -> Void {
+    public func finish(error: Error?) {
         
         if let blank = blank {if blank.isAnimating {blank.isAnimating = false}}
         listView?.reloadBlank()
@@ -222,7 +222,7 @@ public class List: NSObject {
         lastItemCount = listView?.itemsCount()
     }
     
-    @objc public func pull_loadNewData() -> Void {
+    @objc public func pull_loadNewData() {
         guard loadStatus == .idle else {return}
         setStatus(.new)
         let length = ((self.conf?.loadStyle == .header || self.conf?.loadStyle == .nothing) ? dataLengthMax : dataLengthDefault)
@@ -231,7 +231,7 @@ public class List: NSObject {
         listView?.loadNewData()
     }
     
-    @objc public func loadNewData() -> Void {
+    @objc public func loadNewData() {
         if conf?.loadStrategy == .manual && (conf?.loadStyle == .header || conf?.loadStyle == .all)  {
             beginning()
         }else {
@@ -239,7 +239,7 @@ public class List: NSObject {
         }
     }
     
-    @objc public func reloadData() -> Void {
+    @objc public func reloadData() {
         let sel: Selector = NSSelectorFromString("reloadData")
         if listView?.responds(to: sel) ?? false {
             listView?.perform(sel, with: nil)
@@ -248,7 +248,7 @@ public class List: NSObject {
         }
     }
     
-    public func beginning() -> Void {
+    public func beginning() {
         if conf?.loadHeaderStyle == .normal {
             header.beginRefreshing();
         }else if conf?.loadHeaderStyle == .gif {
@@ -332,7 +332,7 @@ public class List: NSObject {
     
     private var lastItemCount: Int!
     
-    @objc func loadMoreData() -> Void {
+    @objc func loadMoreData() {
         if loadStatus != .idle {return}
         setStatus(.more)
         let loc: Int = Int(ceilf((Float((listView?.itemsCount() ?? 0) / (conf?.length ?? dataLengthDefault)))))
@@ -359,7 +359,7 @@ public class ListDefaultConf: NSObject {
     
     public var conf: ListConf?
     
-    public var setupConf: (_ closure: (_ conf: ListConf)-> (Void)) -> Void {
+    public var setupConf: (_ closure: (_ conf: ListConf) -> Void) -> Void {
         get {
             return { [weak self] (cls) in
                 let conf = ListConf()
@@ -392,11 +392,11 @@ extension UIScrollView {
         }
     }
 
-    private func setAtList(_ newValue: List) -> Void {
+    private func setAtList(_ newValue: List) {
         objc_setAssociatedObject(self, &kList, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
     }
 
-    public func updateListConf(listConfClosure: ListConfClosure?) -> Void {
+    public func updateListConf(listConfClosure: ListConfClosure?) {
         let defaultConf: ListConf = ListDefaultConf.share.conf?.copy() as! ListConf
         let conf: ListConf = self.atList.conf ?? defaultConf
         if conf.length == 0 {
@@ -407,7 +407,7 @@ extension UIScrollView {
         listConfClosure?(conf)
     }
 
-    public func loadListData(_ listClosure: @escaping ListClosure) -> Void {
+    public func loadListData(_ listClosure: @escaping ListClosure) {
         self.listBlock = listClosure
         self.atList.listView = self
         let defaultConf: ListConf = ListDefaultConf.share.conf?.copy() as! ListConf
@@ -424,11 +424,11 @@ extension UIScrollView {
         }
     }
 
-    fileprivate func loadNewData() -> Void {
+    fileprivate func loadNewData() {
         self.listBlock?(self.atList)
     }
     
-    fileprivate func loadMoreData() -> Void {
+    fileprivate func loadMoreData() {
         self.listBlock?(self.atList)
     }
 }
