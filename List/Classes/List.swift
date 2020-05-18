@@ -396,7 +396,7 @@ extension UIScrollView {
         objc_setAssociatedObject(self, &kList, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
     }
 
-    public func updateListConf(listConfClosure: ListConfClosure?) {
+    public func updateListConf(_ listConfClosure: ListConfClosure?) {
         let defaultConf: ListConf = ListDefaultConf.share.conf?.copy() as! ListConf
         let conf: ListConf = self.atList.conf ?? defaultConf
         if conf.length == 0 {
