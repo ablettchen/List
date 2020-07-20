@@ -12,7 +12,7 @@ import List
 import SnapKit
 
 class ExampleController: UIViewController, UITableViewDataSource, UITableViewDelegate {
-
+    
     public var loadStrategy: LoadStrategy = .auto
     public var loadStyle: LoadStyle = .header
     var addData = true
@@ -35,11 +35,15 @@ class ExampleController: UIViewController, UITableViewDataSource, UITableViewDel
             conf.loadStrategy = self.loadStrategy
             conf.loadStyle = self.loadStyle
             conf.length = 20
-            conf.blankData = [.fail : Blank(type: .fail,
-                                            image: Blank.defaultBlankImage(type: .fail),
-                                            title: .init(string: "绘本数据加载失败"),
-                                            desc: .init(string: "10015"),
-                                            tap: nil)];
+            conf.blankData = [
+                .fail : Blank(
+                    type: .fail,
+                    image: Blank.defaultBlankImage(type: .fail),
+                    title: .init(string: "绘本数据加载失败"),
+                    desc: .init(string: "10015"),
+                    tap: nil
+                )
+            ];
         }
         
         // 加载数据
@@ -58,7 +62,7 @@ class ExampleController: UIViewController, UITableViewDataSource, UITableViewDel
             make.edges.equalTo(self.view)
         }
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.

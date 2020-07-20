@@ -17,23 +17,28 @@
             conf.loadStyle = .all
             conf.loadStrategy = .auto
             conf.length = 20
-            conf.blankData = [.fail : Blank(type: .fail,
-                                            image: Blank.defaultBlankImage(type: .fail),
-                                            title: .init(string: "请求失败"),
-                                            desc: .init(string: "10010"),
-                                            tap: nil),
-                              
-                              .noData : Blank(type: .noData,
-                                              image: Blank.defaultBlankImage(type: .fail),
-                                              title: .init(string: "没有数据"),
-                                              desc: .init(string: "10011"),
-                                              tap: nil),
-                              
-                              .noNetwork : Blank(type: .noNetwork,
-                                                 image: Blank.defaultBlankImage(type: .fail),
-                                                 title: .init(string: "没有网络"),
-                                                 desc: .init(string: "10012"),
-                                                 tap: nil)];
+            conf.blankData = [
+                .fail : Blank(
+                    type: .fail,
+                    image: Blank.defaultBlankImage(type: .fail),
+                    title: .init(string: "请求失败"),
+                    desc: .init(string: "10010"),
+                    tap: nil
+                ),
+                .noData : Blank(
+                    type: .noData,
+                    image: Blank.defaultBlankImage(type: .fail),
+                    title: .init(string: "没有数据"),
+                    desc: .init(string: "10011"),
+                    tap: nil
+                ),
+                .noNetwork : Blank(
+                    type: .noNetwork,image: Blank.defaultBlankImage(type: .fail),
+                    title: .init(string: "没有网络"),
+                    desc: .init(string: "10012"),
+                    tap: nil)
+            ];
+            conf.loadHeaderStyle = .gif
         }
 
 ```
@@ -46,11 +51,15 @@
             conf.loadStrategy = self.loadStrategy
             conf.loadStyle = self.loadStyle
             conf.length = 20
-            conf.blankData = [.fail : Blank(type: .fail,
-                                            image: Blank.defaultBlankImage(type: .fail),
-                                            title: .init(string: "绘本数据加载失败"),
-                                            desc: .init(string: "10015"),
-                                            tap: nil)];
+            conf.blankData = [
+                .fail : Blank(
+                    type: .fail,
+                    image: Blank.defaultBlankImage(type: .fail),
+                    title: .init(string: "绘本数据加载失败"),
+                    desc: .init(string: "10015"),
+                    tap: nil
+                )
+            ];
         }
         
         // 加载数据
