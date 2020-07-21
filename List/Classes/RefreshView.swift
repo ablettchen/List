@@ -11,6 +11,7 @@ import MJRefresh
 
 
 public class RefreshHeader: MJRefreshStateHeader {
+    
     lazy var arrowView: UIImageView = {
         let view = UIImageView(image: Bundle.mj_arrowImage())
         self.addSubview(view)
@@ -30,7 +31,6 @@ public class RefreshHeader: MJRefreshStateHeader {
         return view
     }()
     
-
     public override var state: MJRefreshState {
         didSet {
             if oldValue == state {return}

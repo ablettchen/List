@@ -64,66 +64,6 @@ import Reachability
     }
 }
 
-private var dataLengthDefault: Int = 20
-private var dataLengthMax: Int = 1000
-
-public class ListConf: NSObject {
-    
-    public var customBlankView: UIView?
-    
-    public var loadStyle: LoadStyle = .header
-    public var loadStrategy: LoadStrategy = .auto
-    public var length: Int = dataLengthMax
-    
-    public var blankData: [BlankType : Blank]!
-    
-    public var loadHeaderStyle: LoadHeaderStyle = .normal
-    public var refreshingImages: [UIImage] = []
-    
-    public func reset() -> Void {
-        customBlankView = nil
-        loadStyle = .header
-        loadStrategy = .auto
-        length = dataLengthMax
-        blankData = [.fail      : Blank.defaultBlank(type: .fail),
-                     .noData    : Blank.defaultBlank(type: .noData),
-                     .noNetwork : Blank.defaultBlank(type: .noNetwork)]
-        
-        
-        var gifImages: [UIImage] = []
-        for index in 1...23 {
-            if let image = UIImage(named: "refreshGif_\(index)", in: List.listBundle(), compatibleWith: nil) {
-                gifImages.append(image)
-            }
-        }
-        self.refreshingImages = gifImages
-    }
-    
-    override init() {
-        super.init()
-        reset()
-    }
-}
-
-extension ListConf: NSCopying {
-    public func copy(with zone: NSZone? = nil) -> Any {
-        let conf = ListConf.init()
-        conf.customBlankView = customBlankView
-        conf.loadStyle = loadStyle
-        conf.loadStrategy = loadStrategy
-        conf.length = length
-        conf.blankData = blankData
-        conf.loadHeaderStyle = loadHeaderStyle
-        conf.refreshingImages = refreshingImages
-        return conf
-    }
-}
-
-private var kConf = "kConf"
-private var kLoadStatus = "kLoadStatus"
-private var kRange = "kRange"
-private var kListView = "kListView"
-
 public class List: NSObject {
     
     public var conf: ListConf? {
@@ -149,7 +89,7 @@ public class List: NSObject {
         }
     }
     
-    public var loadStatus: LoadStatus! {
+    public var loadStatus: LoadStatus {
         get {
             if let status = objc_getAssociatedObject(self, &kLoadStatus) as? LoadStatus {return status}
             let status: LoadStatus = .idle
@@ -162,7 +102,7 @@ public class List: NSObject {
         objc_setAssociatedObject(self, &kLoadStatus, loadStatus, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
     }
     
-    public var range: NSRange! {
+    public var range: NSRange {
         get {
             if let range = objc_getAssociatedObject(self, &kRange) as? NSRange {
                 return range;
@@ -177,14 +117,7 @@ public class List: NSObject {
     fileprivate func setRange(_ range: NSRange) {
         objc_setAssociatedObject(self, &kRange, range, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
     }
-    
-    fileprivate class func listBundle() -> Bundle? {
-        if let bundlePath = Bundle(for: List.self).resourcePath?.appending("/List.bundle") {
-            return Bundle(path: bundlePath)
-        }
-        return nil
-    }
-    
+        
     public func finish(error: Error?) {
         
         if let blank = blank {if blank.isAnimating {blank.isAnimating = false}}
@@ -219,7 +152,7 @@ public class List: NSObject {
         }
         reloadData()
         setStatus(.idle)
-        lastItemCount = listView?.itemsCount()
+        lastItemCount = listView?.itemsCount() ?? 0
     }
     
     @objc public func pull_loadNewData() {
@@ -293,44 +226,44 @@ public class List: NSObject {
         return view
     }()
     
-    private var blankType: BlankType! {
+    private var blankType: BlankType = .fail {
         didSet {
             if self.conf?.blankData.isEmpty ?? true {
-                blank = Blank.defaultBlank(type: blankType)
+                blank = Blank.default(type: blankType)
             }else {
                 let rech = Reachability.forInternetConnection()
-                if let b = conf?.blankData[blankType] {
+                if let blank = conf?.blankData[blankType] {
                     if rech?.currentReachabilityStatus() == .NotReachable {
-                        blank = conf?.blankData[.noNetwork]
+                        self.blank = conf?.blankData[.noNetwork]
                     }else {
-                        blank = b
+                        self.blank = blank
                     }
                 }else {
                     if rech?.currentReachabilityStatus() == .NotReachable {
-                        blank = Blank.defaultBlank(type: .noNetwork)
+                        blank = Blank.default(type: .noNetwork)
                     }else {
-                        blank = Blank.defaultBlank(type: blankType)
+                        blank = Blank.default(type: blankType)
                     }
                 }
             }
             
             self.blank?.tap = { [weak self] (tapGesture) in
-                if self?.blank.isAnimating == false {
-                    self?.blank.isAnimating = true
+                if self?.blank?.isAnimating == false {
+                    self?.blank?.isAnimating = true
                     self?.listView?.reloadBlank()
                     self?.loadNewData()
                 }
             }
             
-            blank.customBlankView = conf?.customBlankView
+            blank?.customBlankView = conf?.customBlankView
             listView?.setBlank(blank)
             listView?.reloadBlank()
         }
     }
     
-    private var blank: Blank!
+    private var blank: Blank?
     
-    private var lastItemCount: Int!
+    private var lastItemCount: Int = 0
     
     @objc func loadMoreData() {
         if loadStatus != .idle {return}
@@ -344,42 +277,20 @@ public class List: NSObject {
         super.init()
         setStatus(.idle)
         setRange(NSMakeRange(0, (conf?.length ?? dataLengthMax)))
-        lastItemCount = 0
-    }
-}
-
-public class ListDefaultConf: NSObject {
-    
-    public class var share: ListDefaultConf {
-        struct Static {
-            static let instance: ListDefaultConf = ListDefaultConf()
-        }
-        return Static.instance
-    }
-    
-    public var conf: ListConf?
-    
-    public var setupConf: (_ closure: (_ conf: ListConf) -> Void) -> Void {
-        get {
-            return { [weak self] (cls) in
-                let conf = ListConf()
-                cls(conf)
-                self?.conf = conf
-            }
-        }
     }
 }
 
 private var kList = "kList"
 private var kListClosure = "kListClosure"
-
-public typealias ListClosure = (_ list: List) -> Void
-public typealias ListConfClosure = (_ conf: ListConf) -> Void
+private var kConf = "kConf"
+private var kLoadStatus = "kLoadStatus"
+private var kRange = "kRange"
+private var kListView = "kListView"
 
 extension UIScrollView {
     
-    fileprivate var listBlock: ListClosure? {
-        get {return objc_getAssociatedObject(self, &kListClosure) as? ListClosure}
+    fileprivate var listBlock: ((_ list: List) -> Void)? {
+        get {return objc_getAssociatedObject(self, &kListClosure) as? ((_ list: List) -> Void)}
         set {objc_setAssociatedObject(self, &kListClosure, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)}
     }
     
@@ -396,21 +307,21 @@ extension UIScrollView {
         objc_setAssociatedObject(self, &kList, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
     }
 
-    public func updateListConf(_ listConfClosure: ListConfClosure?) {
-        let defaultConf: ListConf = ListDefaultConf.share.conf?.copy() as! ListConf
-        let conf: ListConf = self.atList.conf ?? defaultConf
+    public func updateListConf(_ block: ((_ conf: ListConf) -> Void)?) {
+        let globalConf: ListConf = ListGlobalConf.share.conf?.copy() as! ListConf
+        let conf: ListConf = self.atList.conf ?? globalConf
         if conf.length == 0 {
             let lentgh = ((conf.loadStyle == .header || conf.loadStyle == .nothing) ? dataLengthMax : dataLengthDefault)
             conf.length = lentgh
         }
         self.atList.conf = conf;
-        listConfClosure?(conf)
+        block?(conf)
     }
 
-    public func loadListData(_ listClosure: @escaping ListClosure) {
-        self.listBlock = listClosure
+    public func loadListData(_ block: ((_ list: List) -> Void)?) {
+        self.listBlock = block
         self.atList.listView = self
-        let defaultConf: ListConf = ListDefaultConf.share.conf?.copy() as! ListConf
+        let defaultConf: ListConf = ListGlobalConf.share.conf?.copy() as! ListConf
         self.atList.conf = self.atList.conf ?? defaultConf
         if self.atList.conf?.loadStrategy == .auto {
             if self.atList.conf?.loadStyle == .nothing || self.atList.conf?.loadStyle == .footer {

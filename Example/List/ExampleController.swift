@@ -30,7 +30,7 @@ class ExampleController: UIViewController, UITableViewDataSource, UITableViewDel
             navigationItem.rightBarButtonItem = UIBarButtonItem.init(title: "手动加载", style: .plain, target: self, action: #selector(loadDatas))
         }
         
-        // 具体列表配置（可选，如不设置，则取 ListDefaultConf，ListDefaultConf 未设置时取 conf）
+        // 具体列表配置（可选，如不设置，则取 ListGlobalConf，ListGlobalConf 未设置时取 conf）
         tableView.updateListConf { (conf) in
             conf.loadStrategy = self.loadStrategy
             conf.loadStyle = self.loadStyle
@@ -38,9 +38,9 @@ class ExampleController: UIViewController, UITableViewDataSource, UITableViewDel
             conf.blankData = [
                 .fail : Blank(
                     type: .fail,
-                    image: Blank.defaultBlankImage(type: .fail),
-                    title: .init(string: "绘本数据加载失败"),
-                    desc: .init(string: "10015"),
+                    image: Blank.image(type: .fail),
+                    title: "绘本数据加载失败",
+                    desc: "10015",
                     tap: nil
                 )
             ];

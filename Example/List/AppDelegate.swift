@@ -20,29 +20,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         
         // 列表配置（可选，如不设置，取默认）
-        ListDefaultConf.share.setupConf { (conf) in
+        ListGlobalConf.share.setupConf { (conf) in
             conf.loadStyle = .all
             conf.loadStrategy = .auto
             conf.length = 20
             conf.blankData = [
                 .fail : Blank(
                     type: .fail,
-                    image: Blank.defaultBlankImage(type: .fail),
-                    title: .init(string: "请求失败"),
-                    desc: .init(string: "10010"),
+                    image: Blank.image(type: .fail),
+                    title: "请求失败",
+                    desc: "10010",
                     tap: nil
                 ),
                 .noData : Blank(
                     type: .noData,
-                    image: Blank.defaultBlankImage(type: .fail),
-                    title: .init(string: "没有数据"),
-                    desc: .init(string: "10011"),
+                    image: Blank.image(type: .fail),
+                    title: "没有数据",
+                    desc: "10011",
                     tap: nil
                 ),
                 .noNetwork : Blank(
-                    type: .noNetwork,image: Blank.defaultBlankImage(type: .fail),
-                    title: .init(string: "没有网络"),
-                    desc: .init(string: "10012"),
+                    type: .noNetwork,
+                    image: Blank.image(type: .fail),
+                    title: "没有网络",
+                    desc: "10012",
                     tap: nil)
             ];
             conf.loadHeaderStyle = .gif
