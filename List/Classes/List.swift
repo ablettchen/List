@@ -231,15 +231,15 @@ public class List: NSObject {
             if self.conf?.blankData.isEmpty ?? true {
                 blank = Blank.default(type: blankType)
             }else {
-                let rech = Reachability.forInternetConnection()
+                let rech = try! Reachability()
                 if let blank = conf?.blankData[blankType] {
-                    if rech?.currentReachabilityStatus() == .NotReachable {
+                    if rech.connection == .unavailable {
                         self.blank = conf?.blankData[.noNetwork]
                     }else {
                         self.blank = blank
                     }
                 }else {
-                    if rech?.currentReachabilityStatus() == .NotReachable {
+                    if rech.connection == .unavailable {
                         blank = Blank.default(type: .noNetwork)
                     }else {
                         blank = Blank.default(type: blankType)
