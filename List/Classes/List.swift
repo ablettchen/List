@@ -164,7 +164,11 @@ public class List: NSObject {
         listView?.loadNewData()
     }
     
-    @objc public func loadNewData() {
+    public func loadNewData(animated: Bool? = true) {
+        guard animated == true else {
+            pull_loadNewData()
+            return
+        }
         if conf?.loadStrategy == .manual && (conf?.loadStyle == .header || conf?.loadStyle == .all)  {
             beginning()
         }else {
