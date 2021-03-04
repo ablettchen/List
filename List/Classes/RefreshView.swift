@@ -101,6 +101,7 @@ public class RefreshHeader: MJRefreshStateHeader {
 }
 
 public class RefreshGifHeader: MJRefreshGifHeader {
+    
     public override func prepare() {
         super.prepare()
         refreshingImages = []
@@ -117,6 +118,7 @@ public class RefreshGifHeader: MJRefreshGifHeader {
 }
 
 public class RefreshFotter: MJRefreshAutoStateFooter {
+    
     lazy var arrowView: UIImageView = {
         let view = UIImageView(image: Bundle.mj_arrowImage())
         self.addSubview(view)

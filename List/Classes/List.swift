@@ -164,7 +164,10 @@ public class List: NSObject {
         listView?.loadNewData()
     }
     
-    public func loadNewData(animated: Bool? = true) {
+    public func loadNewData(animated: Bool? = true, length: Int? = nil) {
+        if let length = length {
+            conf?.length = length
+        }
         guard animated == true else {
             pull_loadNewData()
             return
