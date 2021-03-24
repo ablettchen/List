@@ -258,7 +258,7 @@ public class List: NSObject {
                 if self?.blank?.isAnimating == false {
                     self?.blank?.isAnimating = true
                     self?.listView?.reloadBlank()
-                    self?.loadNewData()
+                    self?.loadNewData(animated: false)
                 }
             }
             
