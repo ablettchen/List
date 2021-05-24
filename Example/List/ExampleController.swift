@@ -13,8 +13,8 @@ import SnapKit
 
 class ExampleController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
-    public var loadStrategy: LoadStrategy = .auto
-    public var loadStyle: LoadStyle = .header
+    public var loadMode: LoadMode = .auto
+    public var loadComponent: LoadComponent = .header
     var addData = true
     private var datas: [String] = [];
     
@@ -26,14 +26,15 @@ class ExampleController: UIViewController, UITableViewDataSource, UITableViewDel
         extendedLayoutIncludesOpaqueBars = false
         edgesForExtendedLayout = []
         
-        if loadStrategy == .manual {
+        if loadMode == .manual {
             navigationItem.rightBarButtonItem = UIBarButtonItem.init(title: "手动加载", style: .plain, target: self, action: #selector(loadDatas))
         }
         
         // 具体列表配置（可选，如不设置，则取 ListGlobalConf，ListGlobalConf 未设置时取 conf）
-        tableView.updateListConf { (conf) in
-            conf.loadStrategy = self.loadStrategy
-            conf.loadStyle = self.loadStyle
+        tableView.updateListConf { [weak self] (conf) in
+            guard self != nil else {return}
+            conf.loadMode = self!.loadMode
+            conf.loadComponent = self!.loadComponent
             conf.length = 20
             conf.blankData = [
                 .fail : Blank(
@@ -47,10 +48,13 @@ class ExampleController: UIViewController, UITableViewDataSource, UITableViewDel
         }
         
         // 加载数据
-        tableView.loadListData { (list) in
-            self.requestData(["offset" : list.range.location, "number" : list.range.length], { (error, models) in
-                if list.loadStatus == .new {self.datas.removeAll()}
-                if models != nil {self.datas += models!}
+        tableView.loadListData { [weak self] (list) in
+            let strongSelf = self
+            self?.requestData(["offset" : list.range.location, "number" : list.range.length], { [weak strongSelf] (error, models) in
+                if list.loadStatus == .new {strongSelf?.datas.removeAll()}
+                if let datas = models {
+                    strongSelf?.datas += datas
+                }
                 list.finish(error: error)
             })
         }
@@ -58,7 +62,7 @@ class ExampleController: UIViewController, UITableViewDataSource, UITableViewDel
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        tableView.snp_makeConstraints { (make) in
+        tableView.snp.makeConstraints { (make) in
             make.edges.equalTo(self.view)
         }
     }
@@ -77,11 +81,11 @@ class ExampleController: UIViewController, UITableViewDataSource, UITableViewDel
         var models = [String]()
         let range = NSRange.init(location: parameters["offset"]!, length: parameters["number"]!)
         
-        if self.loadStyle == .nothing || self.loadStyle == .header {
+        if self.loadComponent == .nothing || self.loadComponent == .header {
             for i in 0..<range.length {
                 models.append("\(range.location + i + 1)")
             }
-        }else if self.loadStyle == .footer || self.loadStyle == .all {
+        }else if self.loadComponent == .footer || self.loadComponent == .all {
             if range.location < 2 {
                 for i in 0..<range.length {
                     models.append("\(range.location + i + 1)")
@@ -92,7 +96,7 @@ class ExampleController: UIViewController, UITableViewDataSource, UITableViewDel
                 }
             }
         }
-        DispatchQueue.main.asyncAfter(deadline: .now()+1) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             if self.addData {
                 finished(nil, models)
             }else {

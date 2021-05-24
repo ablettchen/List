@@ -11,20 +11,20 @@ import List
 
 public class Example: NSObject {
     
-    public var loadStrategy: LoadStrategy = .auto
-    public var loadStyle: LoadStyle = .header
+    public var loadMode: LoadMode = .auto
+    public var loadComponent: LoadComponent = .header
     
     public var title: NSString = "自动: 下拉刷新"
     
-    public init(loadStrategy: LoadStrategy, loadStyle: LoadStyle) {
+    public init(loadMode: LoadMode, loadComponent: LoadComponent) {
         
         super.init()
         
-        self.loadStrategy = loadStrategy
-        self.loadStyle = loadStyle
+        self.loadMode = loadMode
+        self.loadComponent = loadComponent
         
         var strategyDesc: NSString = ""
-        switch loadStrategy {
+        switch loadMode {
         case .auto:
             strategyDesc = "自动"
         case .manual:
@@ -33,7 +33,7 @@ public class Example: NSObject {
         }
         
         var typeDesc: NSString = ""
-        switch loadStyle {
+        switch loadComponent {
         case .nothing:
             typeDesc = "无刷新"
         case .header:

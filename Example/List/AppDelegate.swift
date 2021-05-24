@@ -21,8 +21,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         // 列表配置（可选，如不设置，取默认）
         ListGlobalConf.share.setupConf { (conf) in
-            conf.loadStyle = .all
-            conf.loadStrategy = .auto
+            conf.loadComponent = .all
+            conf.loadMode = .auto
             conf.length = 20
             conf.blankData = [
                 .fail : Blank(

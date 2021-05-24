@@ -14,8 +14,8 @@
 ```swift
         // 列表配置（可选，如不设置，取默认）
         ListGlobalConf.share.setupConf { (conf) in
-            conf.loadStyle = .all
-            conf.loadStrategy = .auto
+            conf.loadComponent = .all
+            conf.loadMode = .auto
             conf.length = 20
             conf.blankData = [
                 .fail : Blank(
@@ -49,8 +49,8 @@
 ```swift
         // 具体列表配置（可选，如不设置，则取 ListGlobalConf，ListGlobalConf 未设置时取 conf）
         tableView.updateListConf { (conf) in
-            conf.loadStrategy = self.loadStrategy
-            conf.loadStyle = self.loadStyle
+            conf.loadMode = self.loadMode
+            conf.loadComponent = self.loadComponent
             conf.length = 20
             conf.blankData = [
                 .fail : Blank(

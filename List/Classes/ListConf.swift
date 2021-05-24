@@ -16,11 +16,11 @@ public class ListConf: NSObject {
     /// 自定义空白页
     public var customBlankView: UIView?
     
-    /// 加载方式
-    public var loadStyle: LoadStyle = .header
+    /// 加载组成部分
+    public var loadComponent: LoadComponent = .header
     
-    /// 加载策略
-    public var loadStrategy: LoadStrategy = .auto
+    /// 加载模式
+    public var loadMode: LoadMode = .auto
     
     /// 加载长度
     public var length: Int = dataLengthMax
@@ -38,8 +38,8 @@ public class ListConf: NSObject {
     public func reset() {
         
         customBlankView = nil
-        loadStyle = .header
-        loadStrategy = .auto
+        loadComponent = .header
+        loadMode = .auto
         length = dataLengthMax
         blankData = [
             .fail      : Blank.default(type: .fail),
@@ -69,8 +69,8 @@ extension ListConf: NSCopying {
         
         let conf = ListConf.init()
         conf.customBlankView = customBlankView
-        conf.loadStyle = loadStyle
-        conf.loadStrategy = loadStrategy
+        conf.loadComponent = loadComponent
+        conf.loadMode = loadMode
         conf.length = length
         conf.blankData = blankData
         conf.loadHeaderStyle = loadHeaderStyle

@@ -27,7 +27,7 @@ class ExampleListController: UIViewController, UITableViewDataSource, UITableVie
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        tableView.snp_makeConstraints { (make) in
+        tableView.snp.makeConstraints { (make) in
             make.edges.equalTo(self.view)
         }
     }
@@ -39,15 +39,15 @@ class ExampleListController: UIViewController, UITableViewDataSource, UITableVie
     
     func addDatas() -> Void {
         datas.removeAll()
-        datas.append(Example(loadStrategy: .auto, loadStyle: .nothing))
-        datas.append(Example(loadStrategy: .auto, loadStyle: .header))
-        datas.append(Example(loadStrategy: .auto, loadStyle: .footer))
-        datas.append(Example(loadStrategy: .auto, loadStyle: .all))
+        datas.append(Example(loadMode: .auto, loadComponent: .nothing))
+        datas.append(Example(loadMode: .auto, loadComponent: .header))
+        datas.append(Example(loadMode: .auto, loadComponent: .footer))
+        datas.append(Example(loadMode: .auto, loadComponent: .all))
         
-        datas.append(Example(loadStrategy: .manual, loadStyle: .nothing))
-        datas.append(Example(loadStrategy: .manual, loadStyle: .header))
-        datas.append(Example(loadStrategy: .manual, loadStyle: .footer))
-        datas.append(Example(loadStrategy: .manual, loadStyle: .all))
+        datas.append(Example(loadMode: .manual, loadComponent: .nothing))
+        datas.append(Example(loadMode: .manual, loadComponent: .header))
+        datas.append(Example(loadMode: .manual, loadComponent: .footer))
+        datas.append(Example(loadMode: .manual, loadComponent: .all))
     }
     
     private lazy var tableView: UITableView = {
@@ -93,8 +93,8 @@ class ExampleListController: UIViewController, UITableViewDataSource, UITableVie
         let example = datas[indexPath.row]
         let exampleController = ExampleController.init()
         
-        exampleController.loadStrategy = example.loadStrategy
-        exampleController.loadStyle = example.loadStyle
+        exampleController.loadMode = example.loadMode
+        exampleController.loadComponent = example.loadComponent
         exampleController.navigationItem.title = example.title as String
         
         navigationController?.pushViewController(exampleController, animated: true)
