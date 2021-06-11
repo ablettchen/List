@@ -91,7 +91,7 @@ public class List: NSObject {
     
     public fileprivate(set) var range: NSRange = NSMakeRange(0, dataLengthMax)
     
-    public func finish(error: Error?) {
+    public func finish(error: Error?, completion: (() -> Void)? = nil) {
         
         if blank?.isAnimating ?? false {
             blank?.isAnimating = false
@@ -131,9 +131,13 @@ public class List: NSObject {
             break
         }
         
-        reloadData()
-        loadStatus = .idle
-        lastItemCount = listView?.itemsCount() ?? 0
+        UIView.animate(withDuration: 0, animations: {
+            self.reloadData()
+        }, completion: { _ in
+            self.loadStatus = .idle
+            self.lastItemCount = self.listView?.itemsCount() ?? 0
+            completion?()
+        })
     }
     
     @objc public func pull_loadNewData() {
