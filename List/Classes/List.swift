@@ -100,11 +100,7 @@ public class List: NSObject {
         listView?.reloadBlank()
         
         switch loadStatus {
-        case .idle:
-            listView?.mj_header?.endRefreshing()
-            listView?.mj_footer?.resetNoMoreData()
-            listView?.mj_footer?.endRefreshing()
-        case .new:
+        case .idle, .new :
             listView?.mj_header?.endRefreshing()
             listView?.mj_footer?.resetNoMoreData()
             if listView?.itemsCount() == 0 {
