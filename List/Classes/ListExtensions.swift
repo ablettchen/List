@@ -24,8 +24,9 @@ extension UIScrollView {
         }
         get {
             guard let list = objc_getAssociatedObject(self, &AssociatedKeys.list) as? List else {
-                atList = List()
-                return atList
+                let alist = List()
+                objc_setAssociatedObject(self, &AssociatedKeys.list, alist, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+                return alist
             }
             return list
         }
