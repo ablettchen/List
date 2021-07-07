@@ -39,7 +39,7 @@ class ExampleController: UIViewController, UITableViewDataSource, UITableViewDel
             conf.blankData = [
                 .fail : Blank(
                     type: .fail,
-                    image: Blank.image(type: .fail),
+                    image: Blank.image(.fail),
                     title: "绘本数据加载失败",
                     desc: "10015",
                     tap: nil

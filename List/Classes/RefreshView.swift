@@ -33,7 +33,9 @@ public class RefreshHeader: MJRefreshStateHeader {
     
     public override var state: MJRefreshState {
         didSet {
-            if oldValue == state {return}
+            if oldValue == state {
+                return
+            }
             super.state = self.state
             if self.state == .idle {
                 if oldValue == .refreshing {
@@ -140,9 +142,10 @@ public class RefreshFotter: MJRefreshAutoStateFooter {
     
     public override var state: MJRefreshState {
         didSet {
-            if oldValue == state {return}
+            if oldValue == state {
+                return
+            }
             super.state = self.state
-            
             if self.state == .idle || self.state == .noMoreData {
                 self.loadingView.stopAnimating()
             }else {
@@ -158,8 +161,9 @@ public class RefreshFotter: MJRefreshAutoStateFooter {
     
     public override func placeSubviews() {
         super.placeSubviews()
-        
-        if self.constraints.count == 0 {return}
+        if self.constraints.count == 0 {
+            return
+        }
         var loadingCenterX: Float = Float(self.mj_w * 0.5)
         if !self.isRefreshingTitleHidden {
             loadingCenterX = loadingCenterX - Float((self.stateLabel!.mj_w * 0.5 + self.labelLeftInset))

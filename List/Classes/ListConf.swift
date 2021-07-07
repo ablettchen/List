@@ -8,8 +8,8 @@
 import Foundation
 import Blank
 
-var dataLengthDefault: Int = 20
-var dataLengthMax: Int = 1000
+internal var dataLengthDefault: Int = 20
+internal var dataLengthMax: Int = 1000
 
 public class ListConf: NSObject {
     
@@ -42,14 +42,14 @@ public class ListConf: NSObject {
         loadMode = .auto
         length = dataLengthMax
         blankData = [
-            .fail      : Blank.default(type: .fail),
-            .noData    : Blank.default(type: .noData),
-            .noNetwork : Blank.default(type: .noNetwork)
+            .fail      : Blank.default(.fail),
+            .noData    : Blank.default(.noData),
+            .noNetwork : Blank.default(.noNetwork)
         ]
         
         var gifImages: [UIImage] = []
         for index in 1...23 {
-            if let image = UIImage(named: "refreshGif_\(index)", in: Bundle.list(), compatibleWith: nil) {
+            if let image = UIImage(named: "refreshGif_\(index)", in: Bundle.list, compatibleWith: nil) {
                 gifImages.append(image)
             }
         }
@@ -76,5 +76,27 @@ extension ListConf: NSCopying {
         conf.loadHeaderStyle = loadHeaderStyle
         conf.refreshingImages = refreshingImages
         return conf
+    }
+}
+
+public class ListGlobalConf: NSObject {
+    
+    public class var share: ListGlobalConf {
+        struct Static {
+            static let instance: ListGlobalConf = ListGlobalConf()
+        }
+        return Static.instance
+    }
+    
+    public private(set) var conf: ListConf?
+    
+    public var setupConf: (_ block: (_ conf: ListConf) -> Void) -> Void {
+        get {
+            return { (block) in
+                let conf = ListConf()
+                block(conf)
+                ListGlobalConf.share.conf = conf
+            }
+        }
     }
 }

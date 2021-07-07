@@ -20,21 +20,21 @@
             conf.blankData = [
                 .fail : Blank(
                     type: .fail,
-                    image: Blank.image(type: .fail),
+                    image: Blank.image(.fail),
                     title: "请求失败",
                     desc: "10010",
                     tap: nil
                 ),
                 .noData : Blank(
                     type: .noData,
-                    image: Blank.image(type: .fail),
+                    image: Blank.image(.fail),
                     title: "没有数据",
                     desc: "10011",
                     tap: nil
                 ),
                 .noNetwork : Blank(
                     type: .noNetwork,
-                    image: Blank.image(type: .fail),
+                    image: Blank.image(.fail),
                     title: "没有网络",
                     desc: "10012",
                     tap: nil)
@@ -55,7 +55,7 @@
             conf.blankData = [
                 .fail : Blank(
                     type: .fail,
-                    image: Blank.image(type: .fail),
+                    image: Blank.image(.fail),
                     title: "绘本数据加载失败",
                     desc: "10015",
                     tap: nil

@@ -10,60 +10,27 @@ import Blank
 import Reachability
 
 
-@objc public enum LoadComponent: Int, CustomStringConvertible {
-    
+@objc public enum LoadComponent: Int {
     case nothing
     case header
     case footer
     case all
-    
-    public var description: String {
-        switch self {
-        case .nothing   : return "nothing"
-        case .header    : return "load new"
-        case .footer    : return "load more"
-        case .all       : return "load new and load more"
-        }
-    }
 }
 
-@objc public enum LoadMode: Int, CustomStringConvertible {
-    
+@objc public enum LoadMode: Int {
     case auto
     case manual
-    
-    public var description: String {
-        switch self {
-        case .auto      : return "auto"
-        case .manual    : return "manual"
-        }
-    }
 }
 
-@objc public enum LoadStatus: Int, CustomStringConvertible {
+@objc public enum LoadStatus: Int {
     case idle
     case new
     case more
-    
-    public var description: String {
-        switch self {
-        case .idle  : return "idle"
-        case .new   : return "load new"
-        case .more  : return "load more"
-        }
-    }
 }
 
-@objc public enum LoadHeaderStyle: Int, CustomStringConvertible {
+@objc public enum LoadHeaderStyle: Int {
     case normal
     case gif
-    
-    public var description: String {
-        switch self {
-        case .normal : return "normal"
-        case .gif    : return "gif"
-        }
-    }
 }
 
 public class List: NSObject {
@@ -87,101 +54,11 @@ public class List: NSObject {
         }
     }
     
-    public fileprivate(set) var loadStatus: LoadStatus = .idle
-    
-    public fileprivate(set) var range: NSRange = NSMakeRange(0, dataLengthMax)
-    
-    public func finish(error: Error?, completion: (() -> Void)? = nil) {
-        
-        if blank?.isAnimating ?? false {
-            blank?.isAnimating = false
-        }
-        
-        listView?.reloadBlank()
-        
-        switch loadStatus {
-        case .idle, .new :
-            listView?.mj_header?.endRefreshing()
-            listView?.mj_footer?.resetNoMoreData()
-            if listView?.itemsCount() == 0 {
-                blankType = (error == nil) ? .noData : .fail
-            }else {
-                switch conf?.loadComponent {
-                case .footer, .all:
-                    if (listView?.itemsCount() ?? 0) >= (conf?.length ?? dataLengthDefault) {
-                        listView?.mj_footer = footer
-                    }else {
-                        listView?.mj_footer = nil
-                    }
-                default: break
-                }
-            }
-        case .more:
-            if ((listView?.itemsCount() ?? 0) - lastItemCount) < range.length {
-                listView?.mj_footer?.endRefreshingWithNoMoreData()
-            }else {
-                listView?.mj_footer = footer
-                listView?.mj_footer?.endRefreshing()
-            }
-        default:
-            break
-        }
-        
-        UIView.animate(withDuration: 0, animations: {
-            self.reloadData()
-        }, completion: { _ in
-            self.loadStatus = .idle
-            self.lastItemCount = self.listView?.itemsCount() ?? 0
-            completion?()
-        })
-    }
-    
-    @objc public func pull_loadNewData() {
-        guard loadStatus == .idle else {
-            return
-        }
-        loadStatus = .new
-        let isPaging = conf?.loadComponent == .footer || conf?.loadComponent == .all
-        let length = isPaging ? dataLengthDefault : dataLengthMax
-        range = NSMakeRange(0, conf?.length ?? length)
-        lastItemCount = 0
-        listView?.loadNewData()
-    }
-    
-    public func loadNewData(animated: Bool? = true, length: Int? = nil) {
-        if let length = length {
-            conf?.length = length
-        }
-        guard animated == true else {
-            pull_loadNewData()
-            return
-        }
-        let isHaveHeader = conf?.loadComponent == .header || conf?.loadComponent == .all
-        if conf?.loadMode == .manual && isHaveHeader  {
-            beginning()
-        }else {
-            pull_loadNewData()
-        }
-    }
-    
-    @objc public func reloadData() {
-        let sel: Selector = NSSelectorFromString("reloadData")
-        if listView?.responds(to: sel) ?? false {
-            listView?.perform(sel, with: nil)
-        }else {
-            listView?.setNeedsDisplay()
-        }
-    }
-    
-    public func beginning() {
-        if conf?.loadHeaderStyle == .normal {
-            header.beginRefreshing();
-        }else if conf?.loadHeaderStyle == .gif {
-            gifHeader.beginRefreshing();
-        }
-    }
-    
-    fileprivate weak var listView: UIScrollView?
+    public internal(set) var loadStatus: LoadStatus = .idle
+    public internal(set) var range: NSRange = NSMakeRange(0, dataLengthMax)
+    internal weak var listView: UIScrollView?
+    private var blank: Blank?
+    private var lastItemCount: Int = 0
     
     private lazy var header: RefreshHeader = {
         let view: RefreshHeader = RefreshHeader.init(refreshingTarget: self, refreshingAction: #selector(pull_loadNewData))
@@ -222,20 +99,19 @@ public class List: NSObject {
         didSet {
             if let conf = conf {
                 if conf.blankData.isEmpty {
-                    blank = Blank.default(type: blankType)
+                    blank = Blank.default(blankType)
                 }else {
-                    let rech = Reachability.forInternetConnection()
-                    if rech?.currentReachabilityStatus() == .NotReachable {
+                    if Reachability.forInternetConnection()?.currentReachabilityStatus() == .NotReachable {
                         if let b = conf.blankData[.noNetwork] {
                             blank = b
                         }else {
-                            blank = Blank.default(type: .noNetwork)
+                            blank = Blank.default(.noNetwork)
                         }
                     }else {
                         if let b = conf.blankData[blankType] {
                             blank = b
                         }else {
-                            blank = Blank.default(type: blankType)
+                            blank = Blank.default(blankType)
                         }
                     }
                 }
@@ -248,24 +124,80 @@ public class List: NSObject {
                 }
             }
             blank?.customBlankView = conf?.customBlankView
-            listView?.setBlank(blank)
+            listView?.atBlank = blank
             listView?.reloadBlank()
         }
     }
     
-    private var blank: Blank?
-    
-    private var lastItemCount: Int = 0
-    
-    @objc func loadMoreData() {
-        guard loadStatus == .idle else {
+    public func loadNewData(animated: Bool? = true, length: Int? = nil) {
+        if let length = length {
+            conf?.length = length
+        }
+        guard animated == true else {
+            pull_loadNewData()
             return
         }
-        loadStatus = .more
-        let loc: Int = Int(ceilf((Float((listView?.itemsCount() ?? 0) / (conf?.length ?? dataLengthDefault)))))
-        let length: Int = conf?.length ?? dataLengthDefault
-        range = NSMakeRange((loc > 0 ? loc : 1) * length, length)
-        listView?.loadMoreData()
+        let isHaveHeader = conf?.loadComponent == .header || conf?.loadComponent == .all
+        if conf?.loadMode == .manual && isHaveHeader  {
+            beginning()
+        }else {
+            pull_loadNewData()
+        }
+    }
+    
+    @objc
+    public func reloadData() {
+        let sel: Selector = NSSelectorFromString("reloadData")
+        if listView?.responds(to: sel) ?? false {
+            listView?.perform(sel, with: nil)
+        }else {
+            listView?.layoutIfNeeded()
+        }
+    }
+    
+    public func finish(error: Error?, completion: (() -> Void)? = nil) {
+        
+        if blank?.isAnimating ?? false {
+            blank?.isAnimating = false
+        }
+        
+        listView?.reloadBlank()
+        
+        switch loadStatus {
+        case .idle, .new :
+            listView?.mj_header?.endRefreshing()
+            listView?.mj_footer?.resetNoMoreData()
+            if listView?.itemsCount() == 0 {
+                blankType = (error == nil) ? .noData : .fail
+            }else {
+                switch conf?.loadComponent {
+                case .footer, .all:
+                    if (listView?.itemsCount() ?? 0) >= (conf?.length ?? dataLengthDefault) {
+                        listView?.mj_footer = footer
+                    }else {
+                        listView?.mj_footer = nil
+                    }
+                default: break
+                }
+            }
+        case .more:
+            if ((listView?.itemsCount() ?? 0) - lastItemCount) < range.length {
+                listView?.mj_footer?.endRefreshingWithNoMoreData()
+            }else {
+                listView?.mj_footer = footer
+                listView?.mj_footer?.endRefreshing()
+            }
+        default:
+            break
+        }
+        
+        UIView.animate(withDuration: 0, animations: { [weak self] in
+            self?.reloadData()
+        }, completion: { [weak self] _ in
+            self?.loadStatus = .idle
+            self?.lastItemCount = self?.listView?.itemsCount() ?? 0
+            completion?()
+        })
     }
     
     public override init() {
@@ -276,66 +208,38 @@ public class List: NSObject {
     }
 }
 
-private var kList = "kList"
-private var kListClosure = "kListClosure"
-private var kConf = "kConf"
-private var kLoadStatus = "kLoadStatus"
-private var kRange = "kRange"
-private var kListView = "kListView"
-
-extension UIScrollView {
+extension List {
     
-    fileprivate var listBlock: ((_ list: List) -> Void)? {
-        get {return objc_getAssociatedObject(self, &kListClosure) as? ((_ list: List) -> Void)}
-        set {objc_setAssociatedObject(self, &kListClosure, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)}
-    }
-    
-    public var atList: List! {
-        get {
-            if let list = objc_getAssociatedObject(self, &kList) as? List {return list}
-            let list = List()
-            setAtList(list)
-            return list
+    internal func beginning() {
+        if conf?.loadHeaderStyle == .normal {
+            header.beginRefreshing();
+        }else if conf?.loadHeaderStyle == .gif {
+            gifHeader.beginRefreshing();
         }
     }
     
-    private func setAtList(_ newValue: List) {
-        objc_setAssociatedObject(self, &kList, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-    }
-    
-    public func updateListConf(_ block: ((_ conf: ListConf) -> Void)?) {
-        let globalConf: ListConf = ListGlobalConf.share.conf?.copy() as! ListConf
-        let conf: ListConf = atList.conf ?? globalConf
-        if conf.length == 0 {
-            let lentgh = ((conf.loadComponent == .header || conf.loadComponent == .nothing) ? dataLengthMax : dataLengthDefault)
-            conf.length = lentgh
+    @objc
+    private func pull_loadNewData() {
+        guard loadStatus == .idle else {
+            return
         }
-        atList.conf = conf;
-        block?(conf)
+        loadStatus = .new
+        let isPaging = conf?.loadComponent == .footer || conf?.loadComponent == .all
+        let length = isPaging ? dataLengthDefault : dataLengthMax
+        range = NSMakeRange(0, conf?.length ?? length)
+        lastItemCount = 0
+        listView?.loadNewData()
     }
     
-    public func loadListData(_ block: ((_ list: List) -> Void)?) {
-        listBlock = block
-        atList.listView = self
-        let defaultConf: ListConf = ListGlobalConf.share.conf?.copy() as! ListConf
-        atList.conf = atList.conf ?? defaultConf
-        if atList.conf?.loadMode == .auto {
-            if atList.conf?.loadComponent == .nothing || atList.conf?.loadComponent == .footer {
-                atList.loadStatus = .new
-                let lentgh = ((atList.conf?.loadComponent == .header || atList.conf?.loadComponent == .nothing) ? dataLengthMax : dataLengthDefault)
-                atList.range = NSMakeRange(0, atList.conf?.length ?? lentgh)
-                listBlock?(atList)
-            }else {
-                atList.beginning()
-            }
+    @objc
+    private func loadMoreData() {
+        guard loadStatus == .idle else {
+            return
         }
-    }
-    
-    fileprivate func loadNewData() {
-        listBlock?(atList)
-    }
-    
-    fileprivate func loadMoreData() {
-        listBlock?(atList)
+        loadStatus = .more
+        let loc: Int = Int(ceilf((Float((listView?.itemsCount() ?? 0) / (conf?.length ?? dataLengthDefault)))))
+        let length: Int = conf?.length ?? dataLengthDefault
+        range = NSMakeRange((loc > 0 ? loc : 1) * length, length)
+        listView?.loadMoreData()
     }
 }
